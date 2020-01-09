@@ -360,6 +360,6 @@ mod tests {
     fn test_union_update() {}
 
     #[tests]
-    fn update() {}
+    fn test_update() {}
 
 }
