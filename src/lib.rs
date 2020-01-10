@@ -67,7 +67,7 @@ where
         self.elem_counts.capacity()
     }
 
-    pub fn iter(&self) -> Iter<'_, K> {
+    pub fn iter(&self) -> Iter<'_, K, V> {
         Iter {
             iter: self.elem_counts.keys(),
         }
@@ -81,8 +81,8 @@ where
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// ['iter]: struct.Multiset.html#method.iter
-pub struct Iter<'a, K: 'a> {
-    iter: Keys<'a, K, ()>,
+pub struct Iter<'a, K: 'a, V: 'a> {
+    iter: Keys<'a, K, V>,
 }
 
 impl<K, V> PartialEq for MultiSet<K, V>
