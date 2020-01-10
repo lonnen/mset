@@ -1,29 +1,101 @@
+use std::collections::hash_map::Keys;
 use std::collections::HashMap;
 use std::hash::Hash;
 
-#[derive(Clone, Default, Eq)]
-pub struct MultiSet<K>
+/// The easiest way to use `HashMap` with a custom key type is to derive [`Eq`] and [`Hash`].
+/// let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)]
+#[derive(Clone, Default)]
+pub struct MultiSet<K, V>
 where
     K: Eq + Hash,
 {
-    elem_counts: HashMap<K, usize>
+    elem_counts: HashMap<K, V>,
 }
 
-impl<K: Hash + Eq> MultiSet<K> {
-    pub fn new() -> MultiSet<K> {
-        MultiSet { elem_counts: HashMap::new() }
+impl<K: Hash + Eq, V> MultiSet<K, V> {
+    /// Create an empty `MultiSet`.
+    ///
+    ///
+    /// The multi set is initially created with a capacity of 0, so it will not allocate until it
+    /// is first inserted into.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let mset: MultiSet<char> = MultiSet::new();
+    /// ```
+    pub fn new() -> MultiSet<K, V> {
+        MultiSet {
+            elem_counts: HashMap::new(),
+        }
+    }
+
+    /// Create an empty `MultiSet`  with the specified capacity.
+    ///
+    /// The multi set will be able to hold at least `capacity` elements without
+    /// reallocating. If `capacity` is 0, the multi set will not allocate.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let mset: MultiSet<i32> = MultiSet::with_capacity(10);
+    /// assert!(set.capacity() >= 10);
+    /// ```
+    pub fn with_capacity(capacity: usize) -> MultiSet<K, V> {
+        MultiSet {
+            elem_counts: HashMap::with_capacity(capacity),
+        }
     }
 }
 
-impl<K> PartialEq for MultiSet<K>
+impl<K, V> MultiSet<K, V>
+where
+    K: Eq + Hash
+{
+    /// Returns the number of elements the multi set can hold without reallocating.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let mset: MultiSet<i32> = MultiSet::with_capacity(100);
+    /// assert!(mset.capacity >= 100);
+    /// ```
+    pub fn capacity(&self) -> usize {
+        self.elem_counts.capacity()
+    }
+
+    pub fn iter(&self) -> Iter<'_, K> {
+        Iter {
+            iter: self.elem_counts.keys(),
+        }
+    }
+}
+
+/// An iterator over the items of a `MultiSet`.
+///
+/// This `struct` is created by the [`iter`] method on [`MultiSet`].
+/// See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// ['iter]: struct.Multiset.html#method.iter
+pub struct Iter<'a, K: 'a> {
+    iter: Keys<'a, K, ()>,
+}
+
+impl<K, V> PartialEq for MultiSet<K, V>
 where
     K: Eq + Hash,
 {
-    fn eq(&self, _other: &MultiSet<K>) -> bool {
-        // TODO: Fix this
+    fn eq(&self, other: &MultiSet<K, V>) -> bool {
         return true;
     }
 }
+
+impl<K, V> Eq for MultiSet<K, V> where K: Eq + Hash {}
+
 
 #[cfg(test)]
 mod tests {
@@ -31,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_create_new_msets() {
-        let _mset: MultiSet<char> = MultiSet::new();
+        let mset: MultiSet<char, usize> = MultiSet::new();
     }
 
     // #[test]
@@ -356,5 +428,4 @@ mod tests {
 
     // #[tests]
     // fn test_update() {}
-
 }
