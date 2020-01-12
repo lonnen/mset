@@ -4,4 +4,5 @@ jobs:
     docker:
       - image: cimg/rust:1.39.0
     steps:
+      - checkout
       - run: cargo test --lib
