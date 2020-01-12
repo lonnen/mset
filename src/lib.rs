@@ -137,10 +137,49 @@ impl<K, V> MultiSet<K, V> {
         ValuesMut { inner: self.elem_counts.iter_mut() }
     }
 
+    /// An iterator visiting all key-value pairs in arbitrary order.
+    /// The iterator element type is `(&'a K, &'a V)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let mut mset = MultiSet::new();
+    ///
+    /// mset.insert("a", 1);
+    /// mset.insert("b", 2);
+    /// mset.insert("c", 3);
+    ///
+    /// for val in mset.iter() {
+    ///     println!("key: {}, val: {}", key, val);
+    /// }
+    /// ```
     pub fn iter(&self) -> Iter<'_, K, V> {
         Iter { base: self.elem_counts.iter() }
     }
 
+    /// An iterator visiting all values mutably in arbitrary order,
+    /// with mutable references to the values.
+    /// The iterator element type is `(&'a K, &'a mut V)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset = MultiSet::new();
+    ///
+    /// mset.insert("a", 1);
+    /// mset.insert("b", 2);
+    /// mset.insert("c", 3);
+    ///
+    /// for (_, val) in mset.iter_mut() {
+    ///     *val *= 10;
+    /// }
+    ///
+    /// for val in mset.iter() {
+    ///     println!("key: {}, val: {}", key, val);
+    /// }
+    /// ```
     pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
         IterMut { base: self.elem_counts.iter_mut() }
     }
