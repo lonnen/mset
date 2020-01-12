@@ -1,17 +1,21 @@
 use std::collections::hash_map::{Iter as HashMapIter, IterMut as HashMapIterMut};
 use std::collections::HashMap;
-use std::hash::Hash;
+use std::collections::hash_map::RandomState;
+use std::default::Default;
+use std::hash::{BuildHasher, Hash};
 
-/// The easiest way to use `HashMap` with a custom key type is to derive [`Eq`] and [`Hash`].
-/// let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)]
-#[derive(Clone)]
-pub struct MultiSet<K, V> {
-    elem_counts: HashMap<K, V>,
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct MultiSet<K, S = RandomState>
+where
+    K: Hash + Eq,
+    S: BuildHasher
+{
+    elem_counts: HashMap<K, usize, S>,
 }
 
-impl<K: Hash + Eq, V> MultiSet<K, V> {
+impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
+
     /// Create an empty `MultiSet`.
-    ///
     ///
     /// The multi set is initially created with a capacity of 0, so it will not allocate until it
     /// is first inserted into.
@@ -20,15 +24,15 @@ impl<K: Hash + Eq, V> MultiSet<K, V> {
     ///
     /// ```
     /// use mset::MultiSet;
+    ///
     /// let mset: MultiSet<char> = MultiSet::new();
+    /// assert_eq!(mset.len(), 0);
     /// ```
-    pub fn new() -> MultiSet<K, V> {
-        MultiSet {
-            elem_counts: HashMap::new(),
-        }
+    pub fn new() -> MultiSet<K, S> where S: Default {
+        Default::default()
     }
 
-    /// Create an empty `MultiSet`  with the specified capacity.
+    /// Create an empty `MultiSet` with the specified capacity.
     ///
     /// The multi set will be able to hold at least `capacity` elements without
     /// reallocating. If `capacity` is 0, the multi set will not allocate.
@@ -40,14 +44,73 @@ impl<K: Hash + Eq, V> MultiSet<K, V> {
     /// let mset: MultiSet<i32> = MultiSet::with_capacity(10);
     /// assert!(set.capacity() >= 10);
     /// ```
-    pub fn with_capacity(capacity: usize) -> MultiSet<K, V> {
+    pub fn with_capacity(capacity: usize) -> MultiSet<K, S> where S: Default {
         MultiSet {
-            elem_counts: HashMap::with_capacity(capacity),
+            elem_counts: HashMap::with_capacity_and_hasher(capacity, Default::default()),
         }
     }
-}
 
-impl<K, V> MultiSet<K, V> {
+    /// Create an empty `MultiSet` using the specified hasher.
+    ///
+    /// The created MutliSet has the default initial capacity.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let s = RandomState::new();
+    /// let mut mset = MultiSet::with_hasher(s);
+    /// mset.insert(1, 2);
+    /// ```
+    pub fn with_hasher(hash_builder: S) -> MultiSet<K, S> {
+        MultiSet {
+            elem_counts: HashMap::with_hasher(hash_builder),
+        }
+    }
+
+    /// Create an empty `MultiSet` with the specified capacity, using `hash_builder`
+    /// to hash the keys.
+    ///
+    /// The created MutliSet will hold at least `capacity` elements without
+    /// reallocating. If `capacity` is 0, the MultiSet will not allocate.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let s = RandomState::new();
+    /// let mut mset = MultiSet::with_capacity_and_hasher(10, s);
+    /// mset.insert(1, 2);
+    /// ```
+    pub fn with_capacity_and_hasher(capacity: usize, hash_builder: S) -> MultiSet<K, S> {
+        MultiSet {
+            elem_counts: HashMap::with_capacity_and_hasher(capacity, hash_builder),
+        }
+    }
+
+    /// Creat a `MultiSet` with the same BuildHasher type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::HashMap;
+    ///
+    /// let mut m = HashMap::new();
+    /// m.insert('a', 4);
+    /// m.insert('z', 1);
+    ///
+    /// let mset = Multiset::from_hashmap(m);
+    /// assert_eq!(c.len(), 2);
+    /// ```
+    pub fn from_hashmap(rhs: HashMap<K, usize, S>) -> Self {
+        Self { elem_counts: rhs }
+    }
+
     /// Returns the number of elements the multi set can hold without reallocating.
     ///
     /// # Examples
@@ -80,7 +143,7 @@ impl<K, V> MultiSet<K, V> {
     ///     println!("{}", key);
     /// }
     /// ```
-    pub fn keys(&self) -> Keys<'_, K, V> {
+    pub fn keys(&self) -> Keys<'_, K, usize> {
         Keys {
             inner: self.iter(),
         }
@@ -105,7 +168,7 @@ impl<K, V> MultiSet<K, V> {
     ///     println!("{}", val);
     /// }
     /// ```
-    pub fn values(&self) -> Values<'_, K, V> {
+    pub fn values(&self) -> Values<'_, K, usize> {
         Values {
             inner: self.iter(),
         }
@@ -133,7 +196,7 @@ impl<K, V> MultiSet<K, V> {
     ///     println!("{}", val);
     /// }
     /// ```
-    pub fn values_mut(&mut self) -> ValuesMut<'_, K, V> {
+    pub fn values_mut(&mut self) -> ValuesMut<'_, K, usize> {
         ValuesMut { inner: self.elem_counts.iter_mut() }
     }
 
@@ -153,7 +216,7 @@ impl<K, V> MultiSet<K, V> {
     ///     println!("key: {}, val: {}", key, val);
     /// }
     /// ```
-    pub fn iter(&self) -> Iter<'_, K, V> {
+    pub fn iter(&self) -> Iter<'_, K, usize> {
         Iter { base: self.elem_counts.iter() }
     }
 
@@ -180,26 +243,36 @@ impl<K, V> MultiSet<K, V> {
     ///     println!("key: {}, val: {}", key, val);
     /// }
     /// ```
-    pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
+    pub fn iter_mut(&mut self) -> IterMut<'_, K, usize> {
         IterMut { base: self.elem_counts.iter_mut() }
     }
 
+    /// Returns the number of elements int he map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut a = MultiSet::new();
+    /// assert_eq!(a.len(), 0);
+    /// a.insert('a', 10);
+    /// assert_eq!(a.len(), 1);
+    /// ```
     pub fn len(&self) -> usize {
         self.elem_counts.len()
     }
-
 }
 
-impl<K, V> PartialEq for MultiSet<K, V>
-where
-    K: Eq + Hash,
-{
-    fn eq(&self, other: &MultiSet<K, V>) -> bool {
-        return true;
+impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
+    /// Creates a new, empty `MultiSet`.
+    fn default() -> Self {
+        MultiSet {
+            elem_counts: HashMap::default(),
+        }
     }
 }
 
-impl<K, V> Eq for MultiSet<K, V> where K: Eq + Hash {}
 /// An iterator over the entries of a `MultiSet`.
 ///
 /// This `struct` is created by the [`iter`] method on [`MultiSet`]. See its
@@ -270,10 +343,10 @@ pub struct ValuesMut<'a, K: 'a, V: 'a> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_create_new_msets() {
-        let mset: MultiSet<char, usize> = MultiSet::new();
-    }
+    // #[test]
+    // fn test_create_new_msets() {
+    //     let mset: MultiSet<char, usize> = MultiSet::new();
+    // }
 
     // #[test]
     // fn test_add_and_retrieve_elements() {
