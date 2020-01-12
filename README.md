@@ -6,4 +6,10 @@ This crate provides a [multiset](https://en.wikipedia.org/wiki/Multiset) impleme
 
 A mset, multiset, or bag is a set that allows multiple occurances of an element. It supports many basic set operations, e.g. membership test, union, intersection, and difference.
 
-This implementation is based on the builtin `HashMap`, with a nod to [wheerd's python multiset library](https://github.com/wheerd/multiset/).
+## Usage
+
+Don't use this yet. It'll show up on Cargo when in it's in a useful state.
+
+## Documentation
+
+The code is being written with doc comments. This will link to Cargo doc when it's published.
