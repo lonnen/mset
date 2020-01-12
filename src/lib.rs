@@ -1,4 +1,6 @@
-use std::collections::hash_map::{Iter as HashMapIter, IterMut as HashMapIterMut};
+
+use std::borrow::Borrow;
+use std::collections::hash_map::{Entry, Keys, Values, ValuesMut};
 use std::collections::HashMap;
 use std::collections::hash_map::RandomState;
 use std::default::Default;
@@ -62,7 +64,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///
     /// let s = RandomState::new();
     /// let mut mset = MultiSet::with_hasher(s);
-    /// mset.insert(1, 2);
+    /// mset.insert_times(1, 2);
     /// ```
     pub fn with_hasher(hash_builder: S) -> MultiSet<K, S> {
         MultiSet {
@@ -84,7 +86,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///
     /// let s = RandomState::new();
     /// let mut mset = MultiSet::with_capacity_and_hasher(10, s);
-    /// mset.insert(1, 2);
+    /// mset.insert_times(1, 2);
     /// ```
     pub fn with_capacity_and_hasher(capacity: usize, hash_builder: S) -> MultiSet<K, S> {
         MultiSet {
@@ -101,8 +103,8 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// use std::collections::HashMap;
     ///
     /// let mut m = HashMap::new();
-    /// m.insert('a', 4);
-    /// m.insert('z', 1);
+    /// m.insert_times('a', 4);
+    /// m.insert_times('z', 1);
     ///
     /// let mset = Multiset::from_hashmap(m);
     /// assert_eq!(c.len(), 2);
@@ -124,7 +126,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.capacity()
     }
 
-    /// An iterator visiting all keys in arbitrary order.
+    /// An iterator visiting all distinct elements in arbitrary order.
     /// The iterator element type is `&'a K`.
     ///
     /// # Examples
@@ -139,14 +141,12 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// mset.insert('c');
     ///
     /// // Will print in an arbitrary order.
-    /// for key in set.iter() {
+    /// for key in set.keys() {
     ///     println!("{}", key);
     /// }
     /// ```
-    pub fn keys(&self) -> Keys<'_, K, usize> {
-        Keys {
-            inner: self.iter(),
-        }
+    pub fn keys(&self) -> Keys<K, usize> {
+        self.elem_counts.keys()
     }
 
     /// An iterator visiting all values in arbitrary order.
@@ -168,10 +168,8 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///     println!("{}", val);
     /// }
     /// ```
-    pub fn values(&self) -> Values<'_, K, usize> {
-        Values {
-            inner: self.iter(),
-        }
+    pub fn values(&self) -> Values<K, usize> {
+        self.elem_counts.values()
     }
 
     /// An iterator visiting all values mutably in arbitrary order.
@@ -184,9 +182,9 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///
     /// let mut mset = MultiSet::new();
     ///
-    /// mset.insert("a", 1);
-    /// mset.insert("b", 2);
-    /// mset.insert("c", 3);
+    /// mset.insert_times("a", 1);
+    /// mset.insert_times("b", 2);
+    /// mset.insert_times("c", 3);
     ///
     /// for val in mset.values_mut() {
     ///     *val = *val + 10;
@@ -196,55 +194,8 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///     println!("{}", val);
     /// }
     /// ```
-    pub fn values_mut(&mut self) -> ValuesMut<'_, K, usize> {
-        ValuesMut { inner: self.elem_counts.iter_mut() }
-    }
-
-    /// An iterator visiting all key-value pairs in arbitrary order.
-    /// The iterator element type is `(&'a K, &'a V)`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let mut mset = MultiSet::new();
-    ///
-    /// mset.insert("a", 1);
-    /// mset.insert("b", 2);
-    /// mset.insert("c", 3);
-    ///
-    /// for val in mset.iter() {
-    ///     println!("key: {}, val: {}", key, val);
-    /// }
-    /// ```
-    pub fn iter(&self) -> Iter<'_, K, usize> {
-        Iter { base: self.elem_counts.iter() }
-    }
-
-    /// An iterator visiting all values mutably in arbitrary order,
-    /// with mutable references to the values.
-    /// The iterator element type is `(&'a K, &'a mut V)`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset = MultiSet::new();
-    ///
-    /// mset.insert("a", 1);
-    /// mset.insert("b", 2);
-    /// mset.insert("c", 3);
-    ///
-    /// for (_, val) in mset.iter_mut() {
-    ///     *val *= 10;
-    /// }
-    ///
-    /// for val in mset.iter() {
-    ///     println!("key: {}, val: {}", key, val);
-    /// }
-    /// ```
-    pub fn iter_mut(&mut self) -> IterMut<'_, K, usize> {
-        IterMut { base: self.elem_counts.iter_mut() }
+    pub fn values_mut(&mut self) -> ValuesMut<K, usize> {
+        self.elem_counts.values_mut()
     }
 
     /// Returns the number of elements int he map.
@@ -278,6 +229,88 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     pub fn is_empty(&self) -> bool {
         self.elem_counts.is_empty()
     }
+
+    /// Add a value to the multi set.
+    ///
+    /// If the set did not have this value present, `true` is returned.
+    ///
+    /// If the set did have this value present, `false` is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset = MultiSet::new();
+    ///
+    /// assert!(set.insert('a'));
+    /// assert!(!set.insert('a'));
+    /// assert_eq!(set.len(), 1);
+    /// ```
+    pub fn insert(&mut self, value: K) -> bool {
+        self.insert_times(value, 1)
+    }
+
+    pub fn insert_times(&mut self, value: K, n: usize) -> bool {
+        match self.elem_counts.entry(value) {
+            Entry::Vacant(view) => {
+                view.insert(n);
+                true
+            }
+            Entry::Occupied(mut view) => {
+                let v = view.get_mut();
+                *v += n;
+                false
+            }
+        }
+    }
+
+    /// Returns a reference to the value corresponding to the key.
+    ///
+    /// The key may be any borrowed form of the multi set's key type,
+    /// but `Hash` and `Eq` on the borrowed form *must* match those
+    /// for the key type.
+    ///
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use msets::MultiSet;
+    ///
+    /// let mut mset = MultiSet::new();
+    /// mset.insert("a");
+    /// assert_eq!(map.get(&"a"), Some(&1));
+    /// assert_eq!(map.get(&"b"), None);
+    /// ```
+    pub fn get(&self, key: &usize) -> Option<&usize>
+    where
+        K: Borrow<usize>,
+    {
+        self.elem_counts.get(key)
+    }
+
+    /// Returns the key-value pair corresponding to the supplied key.
+    ///
+    /// The supplied key may be any borrowed form of the map's key type,
+    /// but `Hash` and `Eq` on the borrowed form *must* match those for
+    /// the key type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use msets::MultiSet
+    ///
+    /// let mut mset = MutliSet::new();
+    /// mset.insert("a");
+    /// assert_eq!(mset.get_key_value(&"a"), Some((&"a", &1)));
+    /// assert_eq!(mset.get_key_value(&"b"), None);
+    /// ```
+    pub fn get_key_value(&self, key: &usize) -> Option<(&K, &usize)>
+    where
+        K: Borrow<usize>,
+    {
+        self.elem_counts.get_key_value(key)
+    }
 }
 
 impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
@@ -289,87 +322,22 @@ impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
     }
 }
 
-/// An iterator over the entries of a `MultiSet`.
-///
-/// This `struct` is created by the [`iter`] method on [`MultiSet`]. See its
-/// documentation for more.
-///
-/// [`iter_mut`]: struct.MultiSet.html#method.iter
-/// [`MultiSet`]: struct.MultiSet.html
-#[derive(Clone, Debug)]
-pub struct Iter<'a, K: 'a, V: 'a> {
-    base: HashMapIter<'a, K, V>,
-}
-
-/// A mutable iterator over the entries of a `MultiSet`.
-///
-/// This `struct` is created by the [`iter_mut`] method on [`MultiSet`]. See its
-/// documentation for more.
-///
-/// [`iter_mut`]: struct.MultiSet.html#method.iter_mut
-/// [`MultiSet`]: struct.MultiSet.html
-#[derive(Debug)]
-pub struct IterMut<'a, K: 'a, V: 'a> {
-    base: HashMapIterMut<'a, K, V>,
-}
-
-/// An iterator over the keys of a `MultiSet`.
-///
-/// This `struct` is created by the [`keys`] method on [`Multiset`]. See its
-/// documentation for more.
-///
-/// Identical to the HashMultiSet Keys struct, but reimplemented here to work
-/// around `inner` being an inaccesible private field.
-///
-/// [`keys`]: struct.MultiSet.html#method.keys
-/// [`MultiSet`]: struct.MultiSet.html
-#[derive(Clone, Debug)]
-pub struct Keys<'a, K: 'a, V: 'a> {
-    inner: Iter<'a, K, V>,
-}
-
-/// This `struct` is created by the [`values`] method on [`Multiset`]. See its
-/// documentation for more.
-///
-/// Identical to the HashMultiSet Values struct, but reimplemented here to work
-/// around `inner` being an inaccesible private field.
-///
-/// [`values`]: struct.MultiSet.html#method.values
-/// [`MultiSet`]: struct.MultiSet.html
-#[derive(Clone, Debug)]
-pub struct Values<'a, K: 'a, V: 'a> {
-    inner: Iter<'a, K, V>,
-}
-
-// FIXME Drain
-
-/// A mutable iterator over the values of a `MultiSet`.
-///
-/// This `struct` is created by the [`values_mut`] method on [`MultiSet`]. See its
-/// documentation for more.
-///
-/// [`values_mut`]: struct.MultiSet.html#method.values_mut
-/// [`MultiSet`]: struct.MultiSet.html
-#[derive(Debug)]
-pub struct ValuesMut<'a, K: 'a, V: 'a> {
-    inner: HashMapIterMut<'a, K, V>,
-}
-
 #[cfg(test)]
+#[allow(unused_variables)]
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn test_create_new_msets() {
-    //     let mset: MultiSet<char, usize> = MultiSet::new();
-    // }
+    #[test]
+    fn test_create_new_msets() {
+        let mset: MultiSet<char> = MultiSet::new();
+    }
 
     // #[test]
-    // fn test_add_and_retrieve_elements() {
+    // fn test_insert_and_retrieve_elements() {
     //     let mut mset: MultiSet<char> = MultiSet::new();
-    //     mset.add('a');
+    //     mset.insert('a');
     //     assert_eq!(mset.get('a'), 1);
-    //     mset.add('a');
+    //     mset.insert('a');
     //     assert_eq!(mset.get('a'), 2);
 
     //     mset.insert('b', 5);
@@ -379,7 +347,7 @@ mod tests {
     // #[test]
     // fn test_combine_msets() {
     //     let mut m1: MultiSet<char> = MultiSet::new();
-    //     m1.add('a');
+    //     m1.insert('a');
     //     let mut m2: MultiSet<char> = MultiSet::new();
     //     m2.insert('b', 10);
 
@@ -493,7 +461,7 @@ mod tests {
     //     let v1: Vec<char> = vec!['a', 'b', 'b', 'c', 'c', 'c'];
 
     //     for c in v1 {
-    //         mset.add(c);
+    //         mset.insert(c);
     //     }
 
     //     let keys = mset.distinct_elements();
@@ -528,14 +496,14 @@ mod tests {
     //     let v1: Vec<char> = vec!['a', 'a', 'b'];
 
     //     for c in v1 {
-    //         mset.add(c);
+    //         mset.insert(c);
     //     }
 
     //     let mut m2: MultiSet<char> = MultiSet::new();
     //     let v2: Vec<char> = vec!['a', 'a', 'a', 'c'];
 
     //     for c in v3 {
-    //         mset.add(c);
+    //         mset.insert(c);
     //     }
 
     //     let sd1 = m1.test_symmetric_difference(m2);
@@ -553,9 +521,9 @@ mod tests {
     //     let v1: Vec<char> = vec!['a', 'a', 'b'];
 
     //     for c in v1 {
-    //         m1.add(c);
-    //         m2.add(c);
-    //         m2.add(c);
+    //         m1.insert(c);
+    //         m2.insert(c);
+    //         m2.insert(c);
     //     }
 
     //     assert_eq!(m1.times(2), m2);
@@ -567,16 +535,16 @@ mod tests {
     //     let mut m2: MultiSet<char> = MultiSet::new();
 
     //     for c in vec!['a', 'a', 'b'] {
-    //         m1.add(c);
+    //         m1.insert(c);
     //     }
 
     //     for c in vec!['a', 'a', 'b'] {
-    //         m2.add(c);
+    //         m2.insert(c);
     //     }
 
     //     let mut m3: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'a', 'a', 'b'] {
-    //         m3.add(c);
+    //         m3.insert(c);
     //     }
 
     //     assert_eq!(m1.union(m2), m3);
@@ -603,17 +571,17 @@ mod tests {
     // fn test_difference_update() {
     //     let mut m1: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'a', 'b', 'b', 'b', 'c'] {
-    //         m1.add(c);
+    //         m1.insert(c);
     //     }
 
     //     let mut m2: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'b', 'd'] {
-    //         m2.add(c);
+    //         m2.insert(c);
     //     }
 
     //     let mut m3: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'b', 'b', 'c'] {
-    //         m3.add(c);
+    //         m3.insert(c);
     //     }
 
     //     assert_eq!(m1.difference_update(m2), m3);
@@ -623,14 +591,14 @@ mod tests {
     // fn test_discard() {
     //     let mut mset: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'a', 'b', 'b', 'b', 'c'] {
-    //         mset.add(c);
+    //         mset.insert(c);
     //     }
 
     //     mset.discard('b');
 
     //     let mut expected: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'a', 'c'] {
-    //         mset.add(c);
+    //         mset.insert(c);
     //     }
 
     //     assert_eq!(mset, expected);
@@ -640,17 +608,17 @@ mod tests {
     // fn test_intersection_update() {
     //     let mut m1: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'a', 'b'] {
-    //         m1.add(c);
+    //         m1.insert(c);
     //     }
 
     //     let mut m2: MultiSet<char> = MultiSet::new();
     //     for c in vec!['b', 'c'] {
-    //         m2.add(c);
+    //         m2.insert(c);
     //     }
 
     //     let mut expected: MultiSet<char> = MultiSet::new();
     //     for c in vec!['b'] {
-    //         mset.add(c);
+    //         mset.insert(c);
     //     }
 
     //     m1.intersection_update(m2);
@@ -661,7 +629,7 @@ mod tests {
     // fn test_pop() {
     //     let mut mset: MultiSet<char> = MultiSet::new();
     //     for c in vec!['a', 'a', 'b'] {
-    //         mset.add(c);
+    //         mset.insert(c);
     //     }
 
     //     let expected = mset.pop('z');
