@@ -262,6 +262,22 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     pub fn len(&self) -> usize {
         self.elem_counts.len()
     }
+
+    /// Returns `true` if the set contains no elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset = MultiSet::new();
+    /// assert!(mset.is_empty());
+    /// mset.insert(l);
+    /// assert!(!mset.is_empty());
+    /// ```
+    pub fn is_empty(&self) -> bool {
+        self.elem_counts.is_empty()
+    }
 }
 
 impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
