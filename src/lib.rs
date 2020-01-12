@@ -1,14 +1,11 @@
-use std::collections::hash_map::Keys;
+use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 use std::hash::Hash;
 
 /// The easiest way to use `HashMap` with a custom key type is to derive [`Eq`] and [`Hash`].
 /// let timber_resources: HashMap<&str, i32> = [("Norway", 100), ("Denmark", 50), ("Iceland", 10)]
-#[derive(Clone, Default)]
-pub struct MultiSet<K, V>
-where
-    K: Eq + Hash,
-{
+#[derive(Clone)]
+pub struct MultiSet<K, V> {
     elem_counts: HashMap<K, V>,
 }
 
@@ -50,10 +47,7 @@ impl<K: Hash + Eq, V> MultiSet<K, V> {
     }
 }
 
-impl<K, V> MultiSet<K, V>
-where
-    K: Eq + Hash
-{
+impl<K, V> MultiSet<K, V> {
     /// Returns the number of elements the multi set can hold without reallocating.
     ///
     /// # Examples
@@ -67,22 +61,55 @@ where
         self.elem_counts.capacity()
     }
 
-    pub fn iter(&self) -> Iter<'_, K, V> {
-        Iter {
-            iter: self.elem_counts.keys(),
+    /// An iterator visiting all keys in arbitrary order.
+    /// The iterator element type is `&'a K`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// use mut mset = MultiSet::new();
+    /// mset.insert('a');
+    /// mset.insert('a');
+    /// mset.insert('b');
+    /// mset.insert('c');
+    ///
+    /// // Will print in an arbitrary order.
+    /// for key in set.iter() {
+    ///     println!("{}", key);
+    /// }
+    /// ```
+    pub fn keys(&self) -> Keys<'_, K, V> {
+        Keys {
+            inner: self.elem_counts.iter(),
         }
     }
-}
 
-/// An iterator over the items of a `MultiSet`.
-///
-/// This `struct` is created by the [`iter`] method on [`MultiSet`].
-/// See its documentation for more.
-///
-/// [`MultiSet`]: struct.MultiSet.html
-/// ['iter]: struct.Multiset.html#method.iter
-pub struct Iter<'a, K: 'a, V: 'a> {
-    iter: Keys<'a, K, V>,
+    /// An iterator visiting all values in arbitrary order.
+    /// The iterator element type is `&'a V`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// use mut mset = MultiSet::new();
+    /// mset.insert('a');
+    /// mset.insert('a');
+    /// mset.insert('b');
+    /// mset.insert('c');
+    ///
+    /// // Will print in an arbitrary order.
+    /// for val in set.values() {
+    ///     println!("{}", val);
+    /// }
+    /// ```
+    pub fn values(&self) -> Values<'_, K, V> {
+        Values {
+            inner: self.elem_counts.iter(),
+        }
+    }
 }
 
 impl<K, V> PartialEq for MultiSet<K, V>
@@ -96,6 +123,33 @@ where
 
 impl<K, V> Eq for MultiSet<K, V> where K: Eq + Hash {}
 
+/// An iterator over the keys of a `MultiSet`.
+///
+/// This `struct` is created by the [`keys`] method on [`Multiset`]. See its
+/// documentation for more.
+///
+/// Identical to the HashMultiSet Keys struct, but reimplemented here to work
+/// around `inner` being an inaccesible private field.
+///
+/// [`keys`]: struct.MultiSet.html#method.keys
+/// [`MultiSet`]: struct.MultiSet.html
+#[derive(Clone, Debug)]
+pub struct Keys<'a, K: 'a, V: 'a> {
+    inner: Iter<'a, K, V>,
+}
+
+/// This `struct` is created by the [`values`] method on [`Multiset`]. See its
+/// documentation for more.
+///
+/// Identical to the HashMultiSet Values struct, but reimplemented here to work
+/// around `inner` being an inaccesible private field.
+///
+/// [`values`]: struct.MultiSet.html#method.values
+/// [`MultiSet`]: struct.MultiSet.html
+#[derive(Clone, Debug)]
+pub struct Values<'a, K: 'a, V: 'a> {
+    inner: Iter<'a, K, V>,
+}
 
 #[cfg(test)]
 mod tests {
