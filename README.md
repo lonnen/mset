@@ -4,6 +4,8 @@ This crate provides a [multiset](https://en.wikipedia.org/wiki/Multiset) impleme
 
 ## Overview
 
+[![CircleCI](https://circleci.com/gh/lonnen/mset.svg?style=svg)](https://circleci.com/gh/lonnen/mset)
+
 A mset, multiset, or bag is a set that allows multiple occurances of an element. It supports many basic set operations, e.g. membership test, union, intersection, and difference.
 
 ## Usage
