@@ -1,4 +1,4 @@
-use std::collections::hash_map::Iter;
+use std::collections::hash_map::{Iter as HashMapIter, IterMut as HashMapIterMut};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -82,7 +82,7 @@ impl<K, V> MultiSet<K, V> {
     /// ```
     pub fn keys(&self) -> Keys<'_, K, V> {
         Keys {
-            inner: self.elem_counts.iter(),
+            inner: self.iter(),
         }
     }
 
@@ -107,9 +107,48 @@ impl<K, V> MultiSet<K, V> {
     /// ```
     pub fn values(&self) -> Values<'_, K, V> {
         Values {
-            inner: self.elem_counts.iter(),
+            inner: self.iter(),
         }
     }
+
+    /// An iterator visiting all values mutably in arbitrary order.
+    /// The iterator element type is `&'a mut V`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset = MultiSet::new();
+    ///
+    /// mset.insert("a", 1);
+    /// mset.insert("b", 2);
+    /// mset.insert("c", 3);
+    ///
+    /// for val in mset.values_mut() {
+    ///     *val = *val + 10;
+    /// }
+    ///
+    /// for val in mset.values() {
+    ///     println!("{}", val);
+    /// }
+    /// ```
+    pub fn values_mut(&mut self) -> ValuesMut<'_, K, V> {
+        ValuesMut { inner: self.elem_counts.iter_mut() }
+    }
+
+    pub fn iter(&self) -> Iter<'_, K, V> {
+        Iter { base: self.elem_counts.iter() }
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
+        IterMut { base: self.elem_counts.iter_mut() }
+    }
+
+    pub fn len(&self) -> usize {
+        self.elem_counts.len()
+    }
+
 }
 
 impl<K, V> PartialEq for MultiSet<K, V>
@@ -122,6 +161,29 @@ where
 }
 
 impl<K, V> Eq for MultiSet<K, V> where K: Eq + Hash {}
+/// An iterator over the entries of a `MultiSet`.
+///
+/// This `struct` is created by the [`iter`] method on [`MultiSet`]. See its
+/// documentation for more.
+///
+/// [`iter_mut`]: struct.MultiSet.html#method.iter
+/// [`MultiSet`]: struct.MultiSet.html
+#[derive(Clone, Debug)]
+pub struct Iter<'a, K: 'a, V: 'a> {
+    base: HashMapIter<'a, K, V>,
+}
+
+/// A mutable iterator over the entries of a `MultiSet`.
+///
+/// This `struct` is created by the [`iter_mut`] method on [`MultiSet`]. See its
+/// documentation for more.
+///
+/// [`iter_mut`]: struct.MultiSet.html#method.iter_mut
+/// [`MultiSet`]: struct.MultiSet.html
+#[derive(Debug)]
+pub struct IterMut<'a, K: 'a, V: 'a> {
+    base: HashMapIterMut<'a, K, V>,
+}
 
 /// An iterator over the keys of a `MultiSet`.
 ///
@@ -149,6 +211,20 @@ pub struct Keys<'a, K: 'a, V: 'a> {
 #[derive(Clone, Debug)]
 pub struct Values<'a, K: 'a, V: 'a> {
     inner: Iter<'a, K, V>,
+}
+
+// FIXME Drain
+
+/// A mutable iterator over the values of a `MultiSet`.
+///
+/// This `struct` is created by the [`values_mut`] method on [`MultiSet`]. See its
+/// documentation for more.
+///
+/// [`values_mut`]: struct.MultiSet.html#method.values_mut
+/// [`MultiSet`]: struct.MultiSet.html
+#[derive(Debug)]
+pub struct ValuesMut<'a, K: 'a, V: 'a> {
+    inner: HashMapIterMut<'a, K, V>,
 }
 
 #[cfg(test)]
