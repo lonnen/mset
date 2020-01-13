@@ -5,4 +5,4 @@ jobs:
       - image: cimg/rust:1.40.0
     steps:
       - checkout
-      - run: cargo test --lib
+      - run: cargo test

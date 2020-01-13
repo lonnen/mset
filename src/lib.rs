@@ -44,7 +44,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     /// use mset::MultiSet;
     /// let mset: MultiSet<i32> = MultiSet::with_capacity(10);
-    /// assert!(set.capacity() >= 10);
+    /// assert!(mset.capacity() >= 10);
     /// ```
     pub fn with_capacity(capacity: usize) -> MultiSet<K, S> where S: Default {
         MultiSet {
@@ -103,11 +103,11 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// use std::collections::HashMap;
     ///
     /// let mut m = HashMap::new();
-    /// m.insert_times('a', 4);
-    /// m.insert_times('z', 1);
+    /// m.insert('a', 4);
+    /// m.insert('z', 1);
     ///
-    /// let mset = Multiset::from_hashmap(m);
-    /// assert_eq!(c.len(), 2);
+    /// let mset: MultiSet<char> = MultiSet::from_hashmap(m);
+    /// assert_eq!(mset.len(), 2);
     /// ```
     pub fn from_hashmap(rhs: HashMap<K, usize, S>) -> Self {
         Self { elem_counts: rhs }
@@ -119,8 +119,9 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///
     /// ```
     /// use mset::MultiSet;
+    ///
     /// let mset: MultiSet<i32> = MultiSet::with_capacity(100);
-    /// assert!(mset.capacity >= 100);
+    /// assert!(mset.capacity() >= 100);
     /// ```
     pub fn capacity(&self) -> usize {
         self.elem_counts.capacity()
@@ -134,14 +135,14 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// use mut mset = MultiSet::new();
+    /// let mut mset: MultiSet<char> = MultiSet::new();
     /// mset.insert('a');
     /// mset.insert('a');
     /// mset.insert('b');
     /// mset.insert('c');
     ///
     /// // Will print in an arbitrary order.
-    /// for key in set.keys() {
+    /// for key in mset.keys() {
     ///     println!("{}", key);
     /// }
     /// ```
@@ -157,14 +158,14 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// use mut mset = MultiSet::new();
+    /// let mut mset: MultiSet<char> = MultiSet::new();
     /// mset.insert('a');
     /// mset.insert('a');
     /// mset.insert('b');
     /// mset.insert('c');
     ///
     /// // Will print in an arbitrary order.
-    /// for val in set.values() {
+    /// for val in mset.values() {
     ///     println!("{}", val);
     /// }
     /// ```
@@ -180,11 +181,10 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let mut mset = MultiSet::new();
-    ///
-    /// mset.insert_times("a", 1);
-    /// mset.insert_times("b", 2);
-    /// mset.insert_times("c", 3);
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// mset.insert_times('a', 1);
+    /// mset.insert_times('b', 2);
+    /// mset.insert_times('c', 3);
     ///
     /// for val in mset.values_mut() {
     ///     *val = *val + 10;
@@ -205,10 +205,10 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let mut a = MultiSet::new();
-    /// assert_eq!(a.len(), 0);
-    /// a.insert('a', 10);
-    /// assert_eq!(a.len(), 1);
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// assert_eq!(mset.len(), 0);
+    /// mset.insert_times('a', 10);
+    /// assert_eq!(mset.len(), 1);
     /// ```
     pub fn len(&self) -> usize {
         self.elem_counts.len()
@@ -221,9 +221,9 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let mut mset = MultiSet::new();
+    /// let mut mset: MultiSet<char> = MultiSet::new();
     /// assert!(mset.is_empty());
-    /// mset.insert(l);
+    /// mset.insert('L');
     /// assert!(!mset.is_empty());
     /// ```
     pub fn is_empty(&self) -> bool {
@@ -241,11 +241,11 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let mut mset = MultiSet::new();
+    /// let mut mset: MultiSet<char> = MultiSet::new();
     ///
-    /// assert!(set.insert('a'));
-    /// assert!(!set.insert('a'));
-    /// assert_eq!(set.len(), 1);
+    /// assert!(mset.insert('a'));
+    /// assert!(!mset.insert('a'));
+    /// assert_eq!(mset.len(), 1);
     /// ```
     pub fn insert(&mut self, value: K) -> bool {
         self.insert_times(value, 1)
@@ -275,12 +275,12 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// # Examples
     ///
     /// ```
-    /// use msets::MultiSet;
+    /// use mset::MultiSet;
     ///
-    /// let mut mset = MultiSet::new();
-    /// mset.insert("a");
-    /// assert_eq!(map.get(&"a"), Some(&1));
-    /// assert_eq!(map.get(&"b"), None);
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// mset.insert('a');
+    /// assert_eq!(mset.get(&'a'), Some(&1));
+    /// assert_eq!(mset.get(&'b'), None);
     /// ```
     pub fn get(&self, key: &K) -> Option<&usize>
     where
@@ -298,16 +298,16 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// # Examples
     ///
     /// ```
-    /// use msets::MultiSet
+    /// use mset::MultiSet;
     ///
-    /// let mut mset = MutliSet::new();
-    /// mset.insert("a");
-    /// assert_eq!(mset.get_key_value(&"a"), Some((&"a", &1)));
-    /// assert_eq!(mset.get_key_value(&"b"), None);
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// mset.insert('a');
+    /// assert_eq!(mset.get_key_value(&'a'), Some((&'a', &1)));
+    /// assert_eq!(mset.get_key_value(&'b'), None);
     /// ```
-    pub fn get_key_value(&self, key: &usize) -> Option<(&K, &usize)>
+    pub fn get_key_value(&self, key: &K) -> Option<(&K, &usize)>
     where
-        K: Borrow<usize>,
+        K: Borrow<K>,
     {
         self.elem_counts.get_key_value(key)
     }
