@@ -1,22 +1,24 @@
-
 use std::borrow::Borrow;
+use std::collections::hash_map::RandomState;
 use std::collections::hash_map::{Entry, Keys, Values, ValuesMut};
 use std::collections::HashMap;
-use std::collections::hash_map::RandomState;
 use std::default::Default;
 use std::hash::{BuildHasher, Hash};
+
+type IntoIter<K> = ::std::collections::hash_map::IntoIter<K, usize>;
+type Iter<'a, K> = ::std::collections::hash_map::Iter<'a, K, usize>;
+type IterMut<'a, K> = ::std::collections::hash_map::IterMut<'a, K, usize>;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct MultiSet<K, S = RandomState>
 where
     K: Hash + Eq,
-    S: BuildHasher
+    S: BuildHasher,
 {
     elem_counts: HashMap<K, usize, S>,
 }
 
 impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
-
     /// Create an empty `MultiSet`.
     ///
     /// The multi set is initially created with a capacity of 0, so it will not allocate until it
@@ -30,7 +32,10 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mset: MultiSet<char> = MultiSet::new();
     /// assert_eq!(mset.len(), 0);
     /// ```
-    pub fn new() -> MultiSet<K, S> where S: Default {
+    pub fn new() -> MultiSet<K, S>
+    where
+        S: Default,
+    {
         Default::default()
     }
 
@@ -46,7 +51,10 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mset: MultiSet<i32> = MultiSet::with_capacity(10);
     /// assert!(mset.capacity() >= 10);
     /// ```
-    pub fn with_capacity(capacity: usize) -> MultiSet<K, S> where S: Default {
+    pub fn with_capacity(capacity: usize) -> MultiSet<K, S>
+    where
+        S: Default,
+    {
         MultiSet {
             elem_counts: HashMap::with_capacity_and_hasher(capacity, Default::default()),
         }
@@ -322,6 +330,45 @@ impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
     }
 }
 
+impl<K, S> IntoIterator for MultiSet<K, S>
+where
+    K: Hash + Eq + Clone,
+    S: BuildHasher + Default,
+{
+    type Item = (K, usize);
+    type IntoIter = IntoIter<K>;
+
+    fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
+        self.elem_counts.into_iter()
+    }
+}
+
+impl<'a, K, S> IntoIterator for &'a MultiSet<K, S>
+where
+    K: Hash + Eq,
+    S: BuildHasher,
+{
+    type Item = (&'a K, &'a usize);
+    type IntoIter = Iter<'a, K>;
+
+    fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
+        self.elem_counts.iter()
+    }
+}
+
+impl<'a, K, S> IntoIterator for &'a mut MultiSet<K, S>
+where
+    K: Hash + Eq,
+    S: BuildHasher
+{
+    type Item = (&'a K, &'a mut usize);
+    type  IntoIter = IterMut<'a, K>;
+
+    fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
+        self.elem_counts.iter_mut()
+    }
+}
+
 #[cfg(test)]
 #[allow(unused_variables)]
 mod tests {
@@ -344,16 +391,36 @@ mod tests {
         assert_eq!(mset.get(&'b'), Some(&5));
     }
 
+    #[test]
+    fn test_iterator_over_elements() {
+        let mut mset: MultiSet<char> = MultiSet::with_capacity(4);
+        mset.insert_times('a', 10);
+        mset.insert_times('b', 5);
+        mset.insert_times('c', 1);
+
+        let mut observed: usize = 0;
+        let mut observed_len: usize = 0;
+
+        for (_k, v) in &mset {
+            observed_len += 1;
+            observed += v;
+        }
+
+        assert_eq!(mset.len(), observed_len);
+        assert_eq!(observed, 16);
+    }
+
     // #[test]
-    // fn test_combine_msets() {
+    // fn test_union_of_msets() {
     //     let mut m1: MultiSet<char> = MultiSet::new();
     //     m1.insert('a');
+    //     m1.insert('b');
     //     let mut m2: MultiSet<char> = MultiSet::new();
-    //     m2.insert('b', 10);
+    //     m2.insert_times('b', 10);
 
-    //     let mut m3: MultiSet<char> = m1.combine(m2);
-    //     assert_eq!(m3.get('a'), 1);
-    //     assert_eq!(m3.get('b'), 10);
+    //     let mut m3: MultiSet<char> = m1.union(m2);
+    //     assert_eq!(m3.get(&'a'), Some(&1));
+    //     assert_eq!(m3.get(&'b'), Some(&11));
     // }
 
     // // #[test]
