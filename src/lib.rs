@@ -282,9 +282,9 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert_eq!(map.get(&"a"), Some(&1));
     /// assert_eq!(map.get(&"b"), None);
     /// ```
-    pub fn get(&self, key: &usize) -> Option<&usize>
+    pub fn get(&self, key: &K) -> Option<&usize>
     where
-        K: Borrow<usize>,
+        K: Borrow<K>,
     {
         self.elem_counts.get(key)
     }
@@ -332,17 +332,17 @@ mod tests {
         let mset: MultiSet<char> = MultiSet::new();
     }
 
-    // #[test]
-    // fn test_insert_and_retrieve_elements() {
-    //     let mut mset: MultiSet<char> = MultiSet::new();
-    //     mset.insert('a');
-    //     assert_eq!(mset.get('a'), 1);
-    //     mset.insert('a');
-    //     assert_eq!(mset.get('a'), 2);
+    #[test]
+    fn test_insert_and_retrieve_elements() {
+        let mut mset: MultiSet<char> = MultiSet::new();
+        mset.insert('a');
+        assert_eq!(mset.get(&'a'), Some(&1));
+        mset.insert('a');
+        assert_eq!(mset.get(&'a'), Some(&2));
 
-    //     mset.insert('b', 5);
-    //     assert_eq!(mset.get('b'), 5);
-    // }
+        mset.insert_times('b', 5);
+        assert_eq!(mset.get(&'b'), Some(&5));
+    }
 
     // #[test]
     // fn test_combine_msets() {
