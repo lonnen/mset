@@ -259,6 +259,24 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.insert_times(value, 1)
     }
 
+    /// Add a value to the multi set some number of times
+    ///
+    /// If the set did not have this value present, `true` is returned.
+    ///
+    /// If the set did have this value present, `false` is returned.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    ///
+    /// assert!(mset.insert_times('a', 10));
+    /// assert!(!mset.insert_times('a', 2));
+    /// assert_eq!(mset.len(), 1);
+    /// assert_eq!(mset.get(&'a'), Some(&12));
+    /// ```
     pub fn insert_times(&mut self, value: K, n: usize) -> bool {
         match self.elem_counts.entry(value) {
             Entry::Vacant(view) => {
