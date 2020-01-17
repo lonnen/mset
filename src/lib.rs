@@ -9,6 +9,101 @@ type IntoIter<K> = ::std::collections::hash_map::IntoIter<K, usize>;
 type Iter<'a, K> = ::std::collections::hash_map::Iter<'a, K, usize>;
 type IterMut<'a, K> = ::std::collections::hash_map::IterMut<'a, K, usize>;
 
+/// A hash multi set implemented as a `HashMap` where the value is `usize`.
+///
+/// As with the [`HashMap`] type, a `MultiSet` requires that the elements
+/// implement the [`Eq`] and [`Hash`] traits. This can frequently be achieved by
+/// using `#[derive(PartialEq, Eq, Hash)]`. If you implement these yourself,
+/// it is important that the following property holds:
+///
+/// ```text
+/// k1 == k2 -> hash(k1) == hash(k2)
+/// ```
+///
+/// In other words, if two keys are equal, their hashes must also be equal.
+///
+///
+/// It is a logic error for an item to be modified in such a way that the
+/// item's hash, as determined by the [`Hash`] trait, or its equalit, as
+/// determined by the [`Eq`] trait, changes while it is in the set. This is
+/// normally only possible through [`Cell`], [`RefCell`], global state, I/O, or
+/// unsafe code.
+///
+/// # Examples
+///
+/// ```text
+/// use mset::MultiSet;
+///
+/// // Ocassionally, type inference will let us omit an explicit type signature
+/// // (which would otherwise be `MultiSet<String>` in this example).
+/// let mut bag = MultiSet::new();
+///
+/// // Add some words
+/// bag.insert("contemplate".to_string());
+/// bag.insert("the".to_string());
+/// bag.insert("variations".to_string());
+/// bag.insert("of".to_string());
+/// bag.insert("the".to_string());
+/// bag.insert("23".to_string());
+/// bag.insert("letters".to_string());
+///
+/// // Check for a specific one.
+/// if !bag.contains("Hacedor") {
+///     println!("We have {} words, but Hacedor ain't one."),
+///              bag.len());
+/// }
+///
+/// // Remove a word
+/// bag.remove("23");
+///
+/// // Iterate over everything.
+/// for (word, count) in &bag {
+///     println!("{}: {}", word, count);
+/// }
+/// ```
+///
+/// The easiest way to use `MultiSet` with a custom type is to derive [`Eq`] and
+/// [`Hash`]. We must also derive [`PartialEq`], this will in the future be
+/// implied by [`Eq`].
+///
+/// ```text
+/// use mset::MultiSet;
+/// #[derive(Hash, Eq, PartialEq, Debug)]
+/// struct GuineaPig {
+///     name: String,
+///     weight: usize,
+/// }
+///
+/// let mut gps = MultiSet::new();
+///
+/// gps.insert(GuineaPig { name: "Mumpkans".to_string(), weight: 8 });
+/// gps.insert(GuineaPig { name: "Mumpkans".to_string(), weight: 8 });
+/// gps.insert(GuineaPig { name: "Mr. Mister".to_string(), weight: 5 });
+/// gps.insert(GuineaPig { name: "Popchop".to_string(), weight: 12 });
+/// gps.insert(GuineaPig { name: "Fuzzable".to_string(), weight: 9 });
+///
+/// // Use derived implementation to print the guinea pigs.
+/// for x in &gps {
+///     println!("{:?}", x);
+/// }
+/// ```
+///
+/// A `MultiSet` with fixed list of elements can be initialized from an array:
+///
+/// ```text
+/// use mset:MultiSet;
+///
+/// let gps: MultiSet<&'static str> =
+///     ["Deathmlom", "Bun Roy", "Funbees", "Sporky", "Bun Roy"].iter().cloned().collect();
+/// // use the values stored in the set
+/// ```
+///
+/// [`Cell`]: struct.Cell.html
+/// [`Eq`]: trait.Eq.html
+/// [`Hash`]: trait.Hash.html
+/// [`HashMap`]: struct.HashMap.html
+/// [`PartialEq`]: trait.PartialEq.html
+/// [`RefCell`]: struct.RefCell.html
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct MultiSet<K, S = RandomState>
 where
