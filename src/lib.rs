@@ -49,7 +49,7 @@ type IterMut<'a, K> = ::std::collections::hash_map::IterMut<'a, K, usize>;
 ///
 /// // Check for a specific one.
 /// if !bag.contains("Hacedor") {
-///     println!("We have {} words, but Hacedor ain't one."),
+///     println!("We have {} words, but Hacedor ain't one.",
 ///              bag.len());
 /// }
 ///
@@ -386,6 +386,35 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         }
     }
 
+    /// Returns `true` if the set contains a value.
+    ///
+    /// Teh value may be any borrowed form of the multiset's value type, but
+    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for the
+    /// value type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<i32> = MultiSet::new();
+    /// mset.insert_times(1, 10);
+    /// mset.insert_times(2, 2);
+    ///
+    /// assert_eq!(mset.contains(&1), true);
+    /// assert_eq!(mset.contains(&5), false);
+    /// ```
+    ///
+    /// [`Eq`]: trait.Eq.html
+    /// [`Hash`]: trait.Hash.html
+    pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        self.elem_counts.contains_key(value)
+    }
+
     /// Returns a reference to the value corresponding to the key.
     ///
     /// The key may be any borrowed form of the multi set's key type,
@@ -403,9 +432,10 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert_eq!(mset.get(&'a'), Some(&1));
     /// assert_eq!(mset.get(&'b'), None);
     /// ```
-    pub fn get(&self, key: &K) -> Option<&usize>
+    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&usize>
     where
-        K: Borrow<K>,
+        K: Borrow<Q>,
+        Q: Hash + Eq,
     {
         self.elem_counts.get(key)
     }
