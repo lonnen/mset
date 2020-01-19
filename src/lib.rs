@@ -215,6 +215,28 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.hasher()
     }
 
+    /// Reserves capacity for at least `additional` more elements to be inserted
+    /// in the `HashMap`. The collection may reserve more space to avoid
+    /// frequent reallocations.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the new allocation size overflows [`usize`].
+    ///
+    /// [`usize`]: primitive.usize.html
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<&str> = MultiSet::new();
+    /// mset.reserve(10);
+    /// ```
+    pub fn reserve(&mut self, additional: usize) {
+        self.elem_counts.reserve(additional)
+    }
+
     /// Creat a `MultiSet` with the same BuildHasher type.
     ///
     /// # Examples
