@@ -197,6 +197,24 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         }
     }
 
+    /// Returns a reference to the map's [`BuildHasher`].
+    ///
+    /// [`BuildHasher`]: trait.BuildHasher.html
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let hasher = RandomState::new();
+    /// let mset: MultiSet<i32> = MultiSet::with_hasher(hasher);
+    /// let hasher: &RandomState = mset.hasher();
+    /// ```
+    pub fn hasher(&self) -> &S {
+        self.elem_counts.hasher()
+    }
+
     /// Creat a `MultiSet` with the same BuildHasher type.
     ///
     /// # Examples
@@ -354,6 +372,23 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         Drain { iter: self.elem_counts.drain() }
     }
 
+    /// Clears the multi set, removing all values.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// mset.insert('v');
+    /// assert_eq!(mset.is_empty(), false);
+    /// mset.clear();
+    /// assert!(mset.is_empty());
+    /// ```
+    pub fn clear(&mut self) {
+        self.elem_counts.clear()
+    }
+
     /// Add a value to the multi set.
     ///
     /// If the set did not have this value present, `true` is returned.
@@ -482,23 +517,6 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         K: Borrow<K>,
     {
         self.elem_counts.get_key_value(key)
-    }
-
-    /// Clears the multi set, removing all values.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset: MultiSet<char> = MultiSet::new();
-    /// mset.insert('v');
-    /// assert_eq!(mset.is_empty(), false);
-    /// mset.clear();
-    /// assert!(mset.is_empty());
-    /// ```
-    pub fn clear(&mut self) {
-        self.elem_counts.clear()
     }
 }
 
