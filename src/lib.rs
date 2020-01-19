@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 use std::collections::hash_map::RandomState;
-use std::collections::hash_map::{Entry, Keys, Values, ValuesMut};
+use std::collections::hash_map::{Drain as MapDrain, Entry, Keys, Values, ValuesMut};
 use std::collections::HashMap;
 use std::default::Default;
 use std::hash::{BuildHasher, Hash};
@@ -333,6 +333,27 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.is_empty()
     }
 
+    /// Clears the set, returning all elements in an iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<i32> = MultiSet::new();
+    /// for u in &[1i32, 2i32, 3i32, 3i32, 2i32, 1i32] {
+    ///     mset.insert(*u);
+    /// }
+    ///
+    /// for (k, v) in mset.drain() {
+    ///     assert!(k == 1 || k == 2 || k == 3);
+    ///     assert_eq!(v, 2);
+    /// }
+    /// ```
+    pub fn drain(&mut self) -> Drain<'_, K> {
+        Drain { iter: self.elem_counts.drain() }
+    }
+
     /// Add a value to the multi set.
     ///
     /// If the set did not have this value present, `true` is returned.
@@ -478,6 +499,22 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     pub fn clear(&mut self) {
         self.elem_counts.clear()
+    }
+}
+
+pub struct Drain<'a, K: 'a> {
+    iter: MapDrain<'a, K, usize>,
+}
+
+impl<'a, K> Iterator for Drain<'a, K> {
+    type Item = (K, usize);
+
+    fn next(&mut self) -> Option<(K, usize)> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
     }
 }
 
