@@ -462,6 +462,23 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     {
         self.elem_counts.get_key_value(key)
     }
+
+    /// Clears the multi set, removing all values.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// mset.insert('v');
+    /// assert_eq!(mset.is_empty(), false);
+    /// mset.clear();
+    /// assert!(mset.is_empty());
+    /// ```
+    pub fn clear(&mut self) {
+        self.elem_counts.clear()
+    }
 }
 
 impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
@@ -760,22 +777,22 @@ mod tests {
     //     assert_eq!(m1.union(m2), m3);
     // }
 
-    // #[tests]
-    // fn test_mset_deletion() {
-    //     let mut mset: MultiSet<char> = MultiSet::new();
+    #[test]
+    fn test_mset_clear() {
+        let mut mset: MultiSet<char> = MultiSet::new();
 
-    //     assert!(mset.is_empty());
+        assert!(mset.is_empty());
 
-    //     mset.insert('c', 3);
+        mset.insert_times('c', 3);
 
-    //     assert!(!mset.is_empty());
+        assert!(!mset.is_empty());
 
-    //     assert_eq!(mset.get('c').some(), 3);
+        assert_eq!(mset.get(&'c'), Some(&3));
 
-    //     mset.clear();
+        mset.clear();
 
-    //     assert!(mset.is_empty());
-    // }
+        assert!(mset.is_empty());
+    }
 
     // #[tests]
     // fn test_difference_update() {
