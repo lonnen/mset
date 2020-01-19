@@ -237,6 +237,26 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.reserve(additional)
     }
 
+    /// Shrinks the capacity of the multi set as much as possible. It will
+    /// drop down while maintaining the internal rules and possibly leaving
+    /// some space in accordance with the resize policy.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<i8> = MultiSet::with_capacity(100);
+    /// mset.insert(1i8);
+    /// mset.insert(2i8);
+    /// assert!(mset.capacity() >= 100);
+    /// mset.shrink_to_fit();
+    /// assert!(mset.capacity() >= 2);
+    /// ```
+    pub fn shrink_to_fit(&mut self) {
+        self.elem_counts.shrink_to_fit();
+    }
+
     /// Creat a `MultiSet` with the same BuildHasher type.
     ///
     /// # Examples
