@@ -592,14 +592,14 @@ mod tests {
     //     return true; // TODO mod in place
     // }
 
-    // #[test]
-    // fn test_retrieving_mset_values() {
-    //     let mut m1: MultiSet<char> = MultiSet::new();
-    //     m1.insert("dragons", 9);
+    #[test]
+    fn test_retrieving_mset_values() {
+        let mut m1: MultiSet<char> = MultiSet::new();
+        m1.insert_times('d', 9);
 
-    //     assert_eq!(m1.get("dragons"), Some(9));
-    //     assert_eq!(m1.get("unicorns"), None);
-    // }
+        assert_eq!(m1.get(&'d'), Some(&9));
+        assert_eq!(m1.get(&'u'), None);
+    }
 
     // #[test]
     // fn test_intersection_of_msets() {
