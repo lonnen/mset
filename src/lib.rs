@@ -542,6 +542,36 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.get(key)
     }
 
+    /// Returns a mutable reference to the value corresponding to the key.
+    ///
+    /// The key may be any borrowed form of the map's key type, but [`Hash`]
+    /// and [`Eq`] on the borrowed form *must* match those for the key type.
+    ///
+    /// [`Eq`]: trait.Eq.html
+    /// [`Hash`]: trait.Hash.html
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// mset.insert('a');
+    ///
+    /// if let Some(x) = mset.get_mut(&'a') {
+    ///     *x = 5;
+    /// }
+    /// assert_eq!(mset.get(&'a'), Some(&5));
+    ///
+    /// ```
+    pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut usize>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        self.elem_counts.get_mut(key)
+    }
+
     /// Returns the key-value pair corresponding to the supplied key.
     ///
     /// The supplied key may be any borrowed form of the map's key type,
