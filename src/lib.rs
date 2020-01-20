@@ -488,6 +488,74 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         }
     }
 
+    /// Remove a value from the multi set. Returns whether the value was
+    /// present in the set.
+    ///
+    /// The value may be any borrowed form of the multi set's value type,
+    /// but [`Hash`] and [`Eq`] on the borrowed form *must* match those for
+    /// the value type.
+    ///
+    /// [`Eq`]: trait.Eq.html
+    /// [`Hash`]: trait.Hash.html
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    ///
+    /// mset.insert_times('a', 1);
+    /// assert_eq!(mset.remove(&'a'), true);
+    /// assert_eq!(mset.remove(&'a'), false);
+    /// ```
+    pub fn remove(&mut self, value: &K) -> bool
+    where
+        K: Hash + Eq + Clone,
+    {
+        self.remove_times(value, 1)
+    }
+
+    /// Remove multiple values from the multi set. Returns whether the values
+    /// were present in the set.
+    ///
+    /// The values may be any borrowed form of the multi set's value type,
+    /// but [`Hash`] and [`Eq`] on the borrowed form *must* match those for
+    /// the value type.
+    ///
+    /// [`Eq`]: trait.Eq.html
+    /// [`Hash`]: trait.Hash.html
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// mset.insert_times('c', 10);
+    /// assert_eq!(mset.remove_times(&'c', 2), true);
+    /// assert_eq!(mset.remove_times(&'c', 10), false);
+    /// assert_eq!(mset.len(), 0);
+    ///
+    /// assert!(mset.is_empty());
+    /// ```
+    pub fn remove_times(&mut self, value: &K, n: usize) -> bool
+    where
+        K: Hash + Eq + Clone,
+    {
+        match self.elem_counts.entry((*value).clone()) {
+            Entry::Occupied(mut view) => {
+                if view.get() < &n {
+                    view.remove();
+                    return false;
+                } else {
+                    let new_value = view.get() - n;
+                    view.insert(new_value);
+                    return true;
+                }
+            }
+            Entry::Vacant(__) => {
+                return false;
+            }
+        };
+    }
+
     /// Returns `true` if the set contains a value.
     ///
     /// The value may be any borrowed form of the multiset's value type, but
