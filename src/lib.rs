@@ -257,6 +257,10 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.shrink_to_fit();
     }
 
+    // pub fn entry(&mut self, key: K) -> Entry<'_, K, usize> {
+    //  // maybe this needs implementing?
+    // }
+
     /// Creat a `MultiSet` with the same BuildHasher type.
     ///
     /// # Examples
@@ -486,7 +490,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
 
     /// Returns `true` if the set contains a value.
     ///
-    /// Teh value may be any borrowed form of the multiset's value type, but
+    /// The value may be any borrowed form of the multiset's value type, but
     /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for the
     /// value type.
     ///
