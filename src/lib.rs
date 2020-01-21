@@ -4,6 +4,7 @@ use std::collections::hash_map::{Drain as MapDrain, Entry, Keys, Values, ValuesM
 use std::collections::HashMap;
 use std::default::Default;
 use std::hash::{BuildHasher, Hash};
+use std::iter::FromIterator;
 
 type IntoIter<K> = ::std::collections::hash_map::IntoIter<K, usize>;
 type Iter<'a, K> = ::std::collections::hash_map::Iter<'a, K, usize>;
@@ -686,6 +687,36 @@ impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
         MultiSet {
             elem_counts: HashMap::default(),
         }
+    }
+}
+
+impl<K, S> FromIterator<K> for MultiSet<K, S>
+where
+    K: Hash + Eq + Clone,
+    S: BuildHasher + Default,
+{
+    fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> Self {
+        let iter = iter.into_iter();
+        let mut mset = Self::with_capacity(iter.size_hint().0);
+        for key in iter {
+            mset.insert(key);
+        }
+        mset
+    }
+}
+
+impl<'a, K, S> FromIterator<&'a K> for MultiSet<K, S>
+where
+    K: Hash + Eq + Clone,
+    S: BuildHasher + Default,
+{
+    fn from_iter<I: IntoIterator<Item = &'a K>>(iter: I) -> Self {
+        let iter = iter.into_iter();
+        let mut mset = Self::with_capacity(iter.size_hint().0);
+        for key in iter.map(|ref key| (*key).clone()) {
+            mset.insert(key);
+        }
+        mset
     }
 }
 
