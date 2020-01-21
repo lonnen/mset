@@ -680,7 +680,7 @@ impl<'a, K> Iterator for Drain<'a, K> {
     }
 }
 
-impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
+impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
     /// Creates a new, empty `MultiSet`.
     fn default() -> Self {
         MultiSet {
