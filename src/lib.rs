@@ -697,7 +697,7 @@ where
 {
     fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> Self {
         let iter = iter.into_iter();
-        let mut mset = Self::with_capacity(iter.size_hint().0);
+        let mut mset: MultiSet<K, S> = Self::with_capacity(iter.size_hint().0);
         for key in iter {
             mset.insert(key);
         }
@@ -712,7 +712,7 @@ where
 {
     fn from_iter<I: IntoIterator<Item = &'a K>>(iter: I) -> Self {
         let iter = iter.into_iter();
-        let mut mset = Self::with_capacity(iter.size_hint().0);
+        let mut mset: MultiSet<K, S> = Self::with_capacity(iter.size_hint().0);
         for key in iter.map(|ref key| (*key).clone()) {
             mset.insert(key);
         }
