@@ -767,6 +767,13 @@ mod tests {
     #[test]
     fn test_create_new_msets() {
         let mset: MultiSet<char> = MultiSet::new();
+
+        let mut map: HashMap<char, usize, RandomState> = HashMap::new();
+        map.insert('a', 4);
+        map.insert('z', 1);
+        let mset2: MultiSet<char> = MultiSet::from_hashmap(map);
+
+        let mset3: MultiSet<char> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
     }
 
     #[test]
