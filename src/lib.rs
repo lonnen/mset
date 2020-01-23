@@ -505,8 +505,11 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mut mset: MultiSet<char> = MultiSet::new();
     ///
     /// mset.insert_times('a', 1);
+    /// assert_eq!(mset.capacity(), 1);
     /// assert_eq!(mset.remove(&'a'), true);
     /// assert_eq!(mset.remove(&'a'), false);
+    /// mset.shrink_to_fit();
+    /// assert_eq!(mset.capacity(), 0);
     /// ```
     pub fn remove(&mut self, value: &K) -> bool
     where
@@ -542,12 +545,16 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     {
         match self.elem_counts.entry((*value).clone()) {
             Entry::Occupied(mut view) => {
-                if view.get() < &n {
+                let curr_value = view.get().clone();
+                if curr_value < n {
                     view.remove();
                     return false;
                 } else {
                     let new_value = view.get() - n;
-                    view.insert(new_value);
+                    match new_value {
+                        0 => view.remove(),
+                        _ => view.insert(new_value),
+                    };
                     return true;
                 }
             }
@@ -766,8 +773,40 @@ mod tests {
 
     #[test]
     fn test_create_new_msets() {
-        let mset: MultiSet<char> = MultiSet::new();
+        type MSC = MultiSet<char>;
 
+        let mset = MSC::new();
+        assert_eq!(mset.capacity(), 0);
+
+        let mset = MSC::default();
+        assert_eq!(mset.capacity(), 0);
+
+        let mset = MSC::with_hasher(RandomState::new());
+        assert_eq!(mset.capacity(), 0);
+
+        let mset = MSC::with_capacity(0);
+        assert_eq!(mset.capacity(), 0);
+
+        let mset = MSC::with_capacity_and_hasher(0, RandomState::new());
+        assert_eq!(mset.capacity(), 0);
+
+        let mut mset = MSC::new();
+        mset.insert_times('a', 2);
+        mset.insert('b');
+        mset.insert('b');
+        mset.remove(&'a');
+        mset.remove(&'a');
+        mset.remove_times(&'b', 2);
+        mset.shrink_to_fit();
+        assert_eq!(mset.capacity(), 0);
+
+        let mut m = MSC::new();
+        m.reserve(0);
+        assert_eq!(m.capacity(), 0);
+    }
+
+    #[test]
+    fn test_placeholder() {
         let mut map: HashMap<char, usize, RandomState> = HashMap::new();
         map.insert('a', 4);
         map.insert('z', 1);
