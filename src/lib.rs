@@ -563,6 +563,29 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         };
     }
 
+    /// Removes all instances of an element from the set and returns the
+    /// multiplicity, if the element is in the set.
+    ///
+    /// The value may be any borrowd form of the set's value type, but
+    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for
+    /// the value type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
+    /// assert_eq!(mset.take(&'b'), Some(2));
+    /// assert_eq!(mset.take(&'d'), None);
+    /// ```
+    ///
+    /// [`Eq`]: trait.Eq.html
+    /// [`Hash`]: trait.Hash.html
+    pub fn take(&mut self, value: &K) -> Option<usize> {
+        self.elem_counts.remove_entry(value).map(|(_, v)| v)
+    }
+
     /// Returns `true` if the set contains a value.
     ///
     /// The value may be any borrowed form of the multiset's value type, but
@@ -802,16 +825,6 @@ mod tests {
         let mut m = MSC::new();
         m.reserve(0);
         assert_eq!(m.capacity(), 0);
-    }
-
-    #[test]
-    fn test_placeholder() {
-        let mut map: HashMap<char, usize, RandomState> = HashMap::new();
-        map.insert('a', 4);
-        map.insert('z', 1);
-        let mset2: MultiSet<char> = MultiSet::from_hashmap(map);
-
-        let mset3: MultiSet<char> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
     }
 
     #[test]
