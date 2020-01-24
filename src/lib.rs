@@ -482,8 +482,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
                 true
             }
             Entry::Occupied(mut view) => {
-                let v = view.get_mut();
-                *v += n;
+                *view.get_mut() += n;
                 false
             }
         }
