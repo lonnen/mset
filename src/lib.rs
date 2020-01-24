@@ -1128,19 +1128,6 @@ mod tests {
     // }
 
     // #[tests]
-    // fn test_pop() {
-    //     let mut mset: MultiSet<char> = MultiSet::new();
-    //     for c in vec!['a', 'a', 'b'] {
-    //         mset.insert(c);
-    //     }
-
-    //     let expected = mset.pop('z');
-
-    //     assert_eq!(mset.pop('a'), Some(2));
-    //     assert_eq!(mset.pop('z'), None);
-    // }
-
-    // #[tests]
     // fn test_remove() {
 
     // }
