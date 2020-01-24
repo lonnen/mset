@@ -586,6 +586,26 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.remove_entry(value).map(|(_, v)| v)
     }
 
+    /// Retains only the elements specified by the predicate.
+    ///
+    /// In other words, remove all pairs `(k, v)` such that `f(&k, &mut v)` returns `false`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<char> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
+    /// mset.retain(|_, v: &usize| v % 2 == 0);
+    /// assert_eq!(mset.len(), 2);
+    /// ```
+    pub fn retain<F>(&mut self, mut f: F)
+    where
+        F: FnMut(&K, &usize) -> bool,
+    {
+        self.elem_counts.retain(|k, v| f(k, v));
+    }
+
     /// Returns `true` if the set contains a value.
     ///
     /// The value may be any borrowed form of the multiset's value type, but
@@ -1156,4 +1176,13 @@ mod tests {
 
     // #[tests]
     // fn test_update() {}
+
+    #[test]
+    fn test_retain() {
+        let mut mset: MultiSet<i32> = [1, 2, 3, 4, 5, 4, 3, 2, 1].iter().cloned().collect();
+        mset.retain(|&k, v| k < 3 );
+        assert_eq!(mset.len(), 2);
+        assert_eq!(mset.get(&1), Some(&2usize));
+        assert_eq!(mset.get(&2), Some(&2usize));
+    }
 }
