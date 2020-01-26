@@ -980,6 +980,23 @@ mod tests {
     }
 
     #[test]
+    fn test_drain() {
+        let mut mset: MultiSet<_> = (1..100).map(|x| x % 50).collect();
+
+        let mut last_i = 0;
+        let mut d = mset.drain();
+        for (i, (e, c)) in d.by_ref().take(25).enumerate() {
+            last_i = i;
+            assert!(e != 0);
+            assert_eq!(c, 2);
+        }
+
+        assert_eq!(last_i, 24);
+    }
+
+    // TODO fn test_replace(
+
+    #[test]
     fn test_extend_ref() {
         let mut a = MultiSet::new();
         a.insert(1);
