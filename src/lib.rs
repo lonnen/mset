@@ -981,6 +981,17 @@ mod tests {
 
     #[test]
     fn test_drain() {
+        // trivial
+        let mut mset =  MultiSet::<char>::new();
+        for _ in mset.drain() {}
+        assert!(mset.is_empty());
+        drop(mset);
+
+        let mut mset =  MultiSet::<char>::new();
+        drop(mset.drain());
+        assert!(mset.is_empty());
+
+        // more complicated
         let mut mset: MultiSet<_> = (1..100).map(|x| x % 50).collect();
 
         let mut last_i = 0;
