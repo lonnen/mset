@@ -160,6 +160,26 @@ impl<K, S> MultiSet<K, S> {
         self.elem_counts.capacity()
     }
 
+    /// An iterator visitng all distinct elements and counts in arbitrary order.
+    /// The iterator element type is `&'a (K, usize)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let mut mset = MultiSet::new();
+    /// mset.insert("a");
+    /// mset.insert("b");
+    ///
+    /// // Will print in an arbitrary order.
+    /// for (elem, count) in mset.iter() {
+    ///     println!("{}: {}", elem, count);
+    /// }
+    /// ```
+    pub fn iter(&self) -> Iter<K> {
+        self.elem_counts.iter()
+    }
+
     /// An iterator visiting all distinct elements in arbitrary order.
     /// The iterator element type is `&'a K`.
     ///
@@ -912,6 +932,25 @@ mod tests {
 
         assert_eq!(mset.len(), observed_len);
         assert_eq!(observed, 16);
+
+        let mut mset = MultiSet::new();
+        for i in 0..32 {
+            assert!(mset.insert(i));
+        }
+
+        let mut observed: u32 = 0;
+        let mut i = mset.iter();
+
+        loop {
+            match i.next() {
+                Some((k, v)) => {
+                    observed |= 1 << *k;
+                    assert_eq!(*v, 1);
+                },
+                None => break,
+            }
+        }
+        assert_eq!(observed, 0xFFFF_FFFF);
     }
 
     #[test]
