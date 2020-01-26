@@ -800,6 +800,50 @@ where
     }
 }
 
+impl<K: Eq + Hash, S: BuildHasher> Extend<(K, usize)> for MultiSet<K, S> {
+    fn extend<I: IntoIterator<Item = (K, usize)>>(&mut self, iter: I) {
+        for (key, value) in iter.into_iter() {
+            self.insert_times(key, value);
+        }
+    }
+}
+
+impl<'a, K, S> Extend<(&'a K, &'a usize)> for MultiSet<K, S>
+where
+    K: Eq + Hash + Copy,
+    S: BuildHasher,
+{
+    fn extend<I: IntoIterator<Item = (&'a K, &'a usize)>>(&mut self, iter: I) {
+        for (key, value) in iter.into_iter().map(|(k, v)| ((*k).clone(), (*v).clone())) {
+            self.insert_times(key, value);
+        }
+    }
+}
+
+impl<K, S> Extend<K> for MultiSet<K, S>
+where
+    K: Eq + Hash + Clone,
+    S: BuildHasher + Default,
+{
+    fn extend<I: IntoIterator<Item = K>>(&mut self, iter: I) {
+        for key in iter.into_iter() {
+            self.insert(key);
+        }
+    }
+}
+
+impl<'a, K, S> Extend<&'a K> for MultiSet<K, S>
+where
+    K: Eq + Hash + Clone,
+    S: BuildHasher + Default,
+{
+    fn extend<I: IntoIterator<Item = &'a K>>(&mut self, iter: I) {
+        for key in iter.into_iter().map(|k| (*k).clone()) {
+            self.insert(key.clone());
+        }
+    }
+}
+
 #[cfg(test)]
 #[allow(unused_variables)]
 mod tests {
@@ -1168,6 +1212,42 @@ mod tests {
 
     // #[tests]
     // fn test_update() {}
+
+    #[test]
+    fn test_extend_ref() {
+        let mut a = MultiSet::new();
+        a.insert(1);
+
+        a.extend(&[1, 2, 3, 4]);
+
+        assert_eq!(a.len(), 4);
+        assert!(a.contains(&1));
+        assert!(a.contains(&2));
+        assert!(a.contains(&3));
+        assert!(a.contains(&4));
+
+
+        assert_eq!(a.get(&1), Some(&2));
+        assert_eq!(a.get(&2), Some(&1));
+        assert_eq!(a.get(&5), None);
+
+        let mut b = MultiSet::new();
+        b.insert(1);
+        b.insert(2);
+        b.insert(5);
+
+        a.extend(&b);
+
+        assert_eq!(a.len(), 5);
+        assert!(a.contains(&1));
+        assert!(a.contains(&2));
+        assert!(a.contains(&3));
+        assert!(a.contains(&4));
+        assert!(a.contains(&5));
+        assert_eq!(a.get(&1), Some(&3));
+        assert_eq!(a.get(&2), Some(&2));
+        assert_eq!(a.get(&5), Some(&1));
+    }
 
     #[test]
     fn test_retain() {
