@@ -105,16 +105,12 @@ type IterMut<'a, K> = ::std::collections::hash_map::IterMut<'a, K, usize>;
 /// [`HashMap`]: struct.HashMap.html
 /// [`PartialEq`]: trait.PartialEq.html
 /// [`RefCell`]: struct.RefCell.html
-#[derive(Clone, PartialEq, Eq, Debug)]
-pub struct MultiSet<K, S = RandomState>
-where
-    K: Hash + Eq,
-    S: BuildHasher,
-{
+#[derive(Clone)]
+pub struct MultiSet<K, S = RandomState> {
     elem_counts: HashMap<K, usize, S>,
 }
 
-impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
+impl<K: Hash + Eq> MultiSet<K, RandomState> {
     /// Create an empty `MultiSet`.
     ///
     /// The multi set is initially created with a capacity of 0, so it will not allocate until it
@@ -128,11 +124,8 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mset: MultiSet<char> = MultiSet::new();
     /// assert_eq!(mset.len(), 0);
     /// ```
-    pub fn new() -> MultiSet<K, S>
-    where
-        S: Default,
-    {
-        Default::default()
+    pub fn new() -> MultiSet<K, RandomState> {
+        MultiSet { elem_counts: HashMap::new() }
     }
 
     /// Create an empty `MultiSet` with the specified capacity.
@@ -147,140 +140,12 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mset: MultiSet<i32> = MultiSet::with_capacity(10);
     /// assert!(mset.capacity() >= 10);
     /// ```
-    pub fn with_capacity(capacity: usize) -> MultiSet<K, S>
-    where
-        S: Default,
-    {
-        MultiSet {
-            elem_counts: HashMap::with_capacity_and_hasher(capacity, Default::default()),
-        }
+    pub fn with_capacity(capacity: usize) -> MultiSet<K, RandomState> {
+        MultiSet { elem_counts: HashMap::with_capacity(capacity) }
     }
+}
 
-    /// Create an empty `MultiSet` using the specified hasher.
-    ///
-    /// The created MutliSet has the default initial capacity.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    /// use std::collections::hash_map::RandomState;
-    ///
-    /// let s = RandomState::new();
-    /// let mut mset = MultiSet::with_hasher(s);
-    /// mset.insert_times(1, 2);
-    /// ```
-    pub fn with_hasher(hash_builder: S) -> MultiSet<K, S> {
-        MultiSet {
-            elem_counts: HashMap::with_hasher(hash_builder),
-        }
-    }
-
-    /// Create an empty `MultiSet` with the specified capacity, using `hash_builder`
-    /// to hash the keys.
-    ///
-    /// The created MutliSet will hold at least `capacity` elements without
-    /// reallocating. If `capacity` is 0, the MultiSet will not allocate.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    /// use std::collections::hash_map::RandomState;
-    ///
-    /// let s = RandomState::new();
-    /// let mut mset = MultiSet::with_capacity_and_hasher(10, s);
-    /// mset.insert_times(1, 2);
-    /// ```
-    pub fn with_capacity_and_hasher(capacity: usize, hash_builder: S) -> MultiSet<K, S> {
-        MultiSet {
-            elem_counts: HashMap::with_capacity_and_hasher(capacity, hash_builder),
-        }
-    }
-
-    /// Returns a reference to the map's [`BuildHasher`].
-    ///
-    /// [`BuildHasher`]: trait.BuildHasher.html
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    /// use std::collections::hash_map::RandomState;
-    ///
-    /// let hasher = RandomState::new();
-    /// let mset: MultiSet<i32> = MultiSet::with_hasher(hasher);
-    /// let hasher: &RandomState = mset.hasher();
-    /// ```
-    pub fn hasher(&self) -> &S {
-        self.elem_counts.hasher()
-    }
-
-    /// Reserves capacity for at least `additional` more elements to be inserted
-    /// in the `HashMap`. The collection may reserve more space to avoid
-    /// frequent reallocations.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the new allocation size overflows [`usize`].
-    ///
-    /// [`usize`]: primitive.usize.html
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset: MultiSet<&str> = MultiSet::new();
-    /// mset.reserve(10);
-    /// ```
-    pub fn reserve(&mut self, additional: usize) {
-        self.elem_counts.reserve(additional)
-    }
-
-    /// Shrinks the capacity of the multi set as much as possible. It will
-    /// drop down while maintaining the internal rules and possibly leaving
-    /// some space in accordance with the resize policy.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset: MultiSet<i8> = MultiSet::with_capacity(100);
-    /// mset.insert(1i8);
-    /// mset.insert(2i8);
-    /// assert!(mset.capacity() >= 100);
-    /// mset.shrink_to_fit();
-    /// assert!(mset.capacity() >= 2);
-    /// ```
-    pub fn shrink_to_fit(&mut self) {
-        self.elem_counts.shrink_to_fit();
-    }
-
-    // pub fn entry(&mut self, key: K) -> Entry<'_, K, usize> {
-    //  // maybe this needs implementing?
-    // }
-
-    /// Creat a `MultiSet` with the same BuildHasher type.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    /// use std::collections::HashMap;
-    ///
-    /// let mut m = HashMap::new();
-    /// m.insert('a', 4);
-    /// m.insert('z', 1);
-    ///
-    /// let mset: MultiSet<char> = MultiSet::from_hashmap(m);
-    /// assert_eq!(mset.len(), 2);
-    /// ```
-    pub fn from_hashmap(rhs: HashMap<K, usize, S>) -> Self {
-        Self { elem_counts: rhs }
-    }
-
+impl<K, S> MultiSet<K, S> {
     /// Returns the number of elements the multi set can hold without reallocating.
     ///
     /// # Examples
@@ -434,6 +299,133 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     pub fn clear(&mut self) {
         self.elem_counts.clear()
+    }
+}
+
+impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
+    /// Create an empty `MultiSet` using the specified hasher.
+    ///
+    /// The created MutliSet has the default initial capacity.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let s = RandomState::new();
+    /// let mut mset = MultiSet::with_hasher(s);
+    /// mset.insert_times(1, 2);
+    /// ```
+    pub fn with_hasher(hash_builder: S) -> MultiSet<K, S> {
+        MultiSet {
+            elem_counts: HashMap::with_hasher(hash_builder),
+        }
+    }
+
+    /// Create an empty `MultiSet` with the specified capacity, using `hash_builder`
+    /// to hash the keys.
+    ///
+    /// The created MutliSet will hold at least `capacity` elements without
+    /// reallocating. If `capacity` is 0, the MultiSet will not allocate.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let s = RandomState::new();
+    /// let mut mset = MultiSet::with_capacity_and_hasher(10, s);
+    /// mset.insert_times(1, 2);
+    /// ```
+    pub fn with_capacity_and_hasher(capacity: usize, hash_builder: S) -> MultiSet<K, S> {
+        MultiSet {
+            elem_counts: HashMap::with_capacity_and_hasher(capacity, hash_builder),
+        }
+    }
+
+    /// Returns a reference to the map's [`BuildHasher`].
+    ///
+    /// [`BuildHasher`]: trait.BuildHasher.html
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let hasher = RandomState::new();
+    /// let mset: MultiSet<i32> = MultiSet::with_hasher(hasher);
+    /// let hasher: &RandomState = mset.hasher();
+    /// ```
+    pub fn hasher(&self) -> &S {
+        self.elem_counts.hasher()
+    }
+
+    /// Reserves capacity for at least `additional` more elements to be inserted
+    /// in the `HashMap`. The collection may reserve more space to avoid
+    /// frequent reallocations.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the new allocation size overflows [`usize`].
+    ///
+    /// [`usize`]: primitive.usize.html
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<&str> = MultiSet::new();
+    /// mset.reserve(10);
+    /// ```
+    pub fn reserve(&mut self, additional: usize) {
+        self.elem_counts.reserve(additional)
+    }
+
+    /// Shrinks the capacity of the multi set as much as possible. It will
+    /// drop down while maintaining the internal rules and possibly leaving
+    /// some space in accordance with the resize policy.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<i8> = MultiSet::with_capacity(100);
+    /// mset.insert(1i8);
+    /// mset.insert(2i8);
+    /// assert!(mset.capacity() >= 100);
+    /// mset.shrink_to_fit();
+    /// assert!(mset.capacity() >= 2);
+    /// ```
+    pub fn shrink_to_fit(&mut self) {
+        self.elem_counts.shrink_to_fit();
+    }
+
+    // pub fn entry(&mut self, key: K) -> Entry<'_, K, usize> {
+    //  // maybe this needs implementing?
+    // }
+
+    /// Creat a `MultiSet` with the same BuildHasher type.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// use std::collections::HashMap;
+    ///
+    /// let mut m = HashMap::new();
+    /// m.insert('a', 4);
+    /// m.insert('z', 1);
+    ///
+    /// let mset: MultiSet<char> = MultiSet::from_hashmap(m);
+    /// assert_eq!(mset.len(), 2);
+    /// ```
+    pub fn from_hashmap(rhs: HashMap<K, usize, S>) -> Self {
+        Self { elem_counts: rhs }
     }
 
     /// Add a value to the multi set.
@@ -746,7 +738,7 @@ where
 {
     fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> Self {
         let iter = iter.into_iter();
-        let mut mset: MultiSet<K, S> = Self::with_capacity(iter.size_hint().0);
+        let mut mset: MultiSet<K, S> = MultiSet::with_hasher(Default::default());
         for key in iter {
             mset.insert(key);
         }
@@ -761,7 +753,7 @@ where
 {
     fn from_iter<I: IntoIterator<Item = &'a K>>(iter: I) -> Self {
         let iter = iter.into_iter();
-        let mut mset: MultiSet<K, S> = Self::with_capacity(iter.size_hint().0);
+        let mut mset: MultiSet<K, S> = Self::with_hasher(Default::default());
         for key in iter.map(|ref key| (*key).clone()) {
             mset.insert(key);
         }
