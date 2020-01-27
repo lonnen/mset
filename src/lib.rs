@@ -125,7 +125,9 @@ impl<K: Hash + Eq> MultiSet<K, RandomState> {
     /// assert_eq!(mset.len(), 0);
     /// ```
     pub fn new() -> MultiSet<K, RandomState> {
-        MultiSet { elem_counts: HashMap::new() }
+        MultiSet {
+            elem_counts: HashMap::new(),
+        }
     }
 
     /// Create an empty `MultiSet` with the specified capacity.
@@ -141,7 +143,9 @@ impl<K: Hash + Eq> MultiSet<K, RandomState> {
     /// assert!(mset.capacity() >= 10);
     /// ```
     pub fn with_capacity(capacity: usize) -> MultiSet<K, RandomState> {
-        MultiSet { elem_counts: HashMap::with_capacity(capacity) }
+        MultiSet {
+            elem_counts: HashMap::with_capacity(capacity),
+        }
     }
 }
 
@@ -301,7 +305,9 @@ impl<K, S> MultiSet<K, S> {
     /// }
     /// ```
     pub fn drain(&mut self) -> Drain<'_, K> {
-        Drain { iter: self.elem_counts.drain() }
+        Drain {
+            iter: self.elem_counts.drain(),
+        }
     }
 
     /// Clears the multi set, removing all values.
@@ -810,10 +816,10 @@ where
 impl<'a, K, S> IntoIterator for &'a mut MultiSet<K, S>
 where
     K: Hash + Eq,
-    S: BuildHasher
+    S: BuildHasher,
 {
     type Item = (&'a K, &'a mut usize);
-    type  IntoIter = IterMut<'a, K>;
+    type IntoIter = IterMut<'a, K>;
 
     fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
         self.elem_counts.iter_mut()
@@ -946,7 +952,7 @@ mod tests {
                 Some((k, v)) => {
                     observed |= 1 << *k;
                     assert_eq!(*v, 1);
-                },
+                }
                 None => break,
             }
         }
@@ -982,12 +988,12 @@ mod tests {
     #[test]
     fn test_drain() {
         // trivial
-        let mut mset =  MultiSet::<char>::new();
+        let mut mset = MultiSet::<char>::new();
         for _ in mset.drain() {}
         assert!(mset.is_empty());
         drop(mset);
 
-        let mut mset =  MultiSet::<char>::new();
+        let mut mset = MultiSet::<char>::new();
         drop(mset.drain());
         assert!(mset.is_empty());
 
@@ -1020,7 +1026,6 @@ mod tests {
         assert!(a.contains(&3));
         assert!(a.contains(&4));
 
-
         assert_eq!(a.get(&1), Some(&2));
         assert_eq!(a.get(&2), Some(&1));
         assert_eq!(a.get(&5), None);
@@ -1046,7 +1051,7 @@ mod tests {
     #[test]
     fn test_retain() {
         let mut mset: MultiSet<i32> = [1, 2, 3, 4, 5, 4, 3, 2, 1].iter().cloned().collect();
-        mset.retain(|&k, v| k < 3 );
+        mset.retain(|&k, v| k < 3);
         assert_eq!(mset.len(), 2);
         assert_eq!(mset.get(&1), Some(&2usize));
         assert_eq!(mset.get(&2), Some(&2usize));
