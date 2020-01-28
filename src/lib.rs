@@ -986,32 +986,47 @@ mod tests {
     }
 
     #[test]
-    fn test_drain() {
-        // trivial
+    fn test_drain_trivial() {
         let mut mset = MultiSet::<char>::new();
         for _ in mset.drain() {}
         assert!(mset.is_empty());
-        drop(mset);
 
         let mut mset = MultiSet::<char>::new();
         drop(mset.drain());
         assert!(mset.is_empty());
-
-        // more complicated
-        let mut mset: MultiSet<_> = (1..100).map(|x| x % 50).collect();
-
-        let mut last_i = 0;
-        let mut d = mset.drain();
-        for (i, (e, c)) in d.by_ref().take(25).enumerate() {
-            last_i = i;
-            assert!(e != 0);
-            assert_eq!(c, 2);
-        }
-
-        assert_eq!(last_i, 24);
     }
 
-    // TODO fn test_replace(
+    #[test]
+    fn test_drain_nontrivial() {
+        let mut mset: MultiSet<_> = (1..100).collect();
+
+        for _ in 0..20 {
+            assert_eq!(mset.len(), 99);
+
+            {
+                let mut last_i = 0;
+                let mut d = mset.drain();
+                for (i, (e, c)) in d.by_ref().take(50).enumerate() {
+                    last_i = i;
+                    assert!(e != 0);
+                    assert_eq!(c, 1);
+                }
+
+                assert_eq!(last_i, 49);
+            }
+
+            for _ in &mset {
+                panic!("mset should be empty! this code should never be reached!");
+            }
+
+
+            mset.extend(1..100);
+        }
+
+
+    }
+
+    // TODO fn test_replace()
 
     #[test]
     fn test_extend_ref() {
