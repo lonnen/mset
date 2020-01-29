@@ -1019,11 +1019,8 @@ mod tests {
                 panic!("mset should be empty! this code should never be reached!");
             }
 
-
             mset.extend(1..100);
         }
-
-
     }
 
     // TODO fn test_replace()
