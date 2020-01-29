@@ -3,6 +3,7 @@ use std::collections::hash_map::RandomState;
 use std::collections::hash_map::{Drain as MapDrain, Entry, Keys, Values, ValuesMut};
 use std::collections::HashMap;
 use std::default::Default;
+use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::FromIterator;
 
@@ -757,6 +758,12 @@ impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
     }
 }
 
+impl<K: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<K, S> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_set().entries(self.iter()).finish()
+    }
+}
+
 impl<K, S> FromIterator<K> for MultiSet<K, S>
 where
     K: Hash + Eq + Clone,
@@ -983,6 +990,11 @@ mod tests {
         mset.clear();
 
         assert!(mset.is_empty());
+    }
+
+    #[test]
+    fn test_show_trivial() {
+        assert_eq!(format!("{:?}", MultiSet::<i32>::new()), "{}");
     }
 
     #[test]
