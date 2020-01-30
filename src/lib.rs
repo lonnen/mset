@@ -998,6 +998,14 @@ mod tests {
     }
 
     #[test]
+    fn test_show_nontrivial() {
+        let mset: MultiSet<usize> = [777, 7, 7, 7].iter().collect();
+
+        let debug_str = format!("{:?}", mset);
+        assert!((debug_str == "{(777, 1), (7, 3)}" ) || (debug_str == "{(7, 3), (777, 1)}"));
+    }
+
+    #[test]
     fn test_drain_trivial() {
         let mut mset = MultiSet::<char>::new();
         for _ in mset.drain() {}
