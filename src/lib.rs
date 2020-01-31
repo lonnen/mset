@@ -764,7 +764,8 @@ impl<K: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<K, S> {
             return false;
         }
 
-        self.iter().all(|(key, value)| other.get(key).map_or(false, |v| *value == *v))
+        self.iter()
+            .all(|(key, value)| other.get(key).map_or(false, |v| *value == *v))
     }
 }
 
@@ -1005,19 +1006,6 @@ mod tests {
     }
 
     #[test]
-    fn test_show_trivial() {
-        assert_eq!(format!("{:?}", MultiSet::<i32>::new()), "{}");
-    }
-
-    #[test]
-    fn test_show_nontrivial() {
-        let mset: MultiSet<usize> = [777, 7, 7, 7].iter().collect();
-
-        let debug_str = format!("{:?}", mset);
-        assert!((debug_str == "{(777, 1), (7, 3)}" ) || (debug_str == "{(7, 3), (777, 1)}"));
-    }
-
-    #[test]
     fn test_eq() {
         let mut mset = MultiSet::new();
 
@@ -1037,6 +1025,19 @@ mod tests {
         other_mset.insert(2);
 
         assert_eq!(mset, other_mset);
+    }
+
+    #[test]
+    fn test_show_trivial() {
+        assert_eq!(format!("{:?}", MultiSet::<i32>::new()), "{}");
+    }
+
+    #[test]
+    fn test_show_nontrivial() {
+        let mset: MultiSet<usize> = [777, 7, 7, 7].iter().collect();
+
+        let debug_str = format!("{:?}", mset);
+        assert!((debug_str == "{(777, 1), (7, 3)}") || (debug_str == "{(7, 3), (777, 1)}"));
     }
 
     #[test]
