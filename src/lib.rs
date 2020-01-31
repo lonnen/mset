@@ -1006,6 +1006,21 @@ mod tests {
     }
 
     #[test]
+    fn test_move_iter() {
+        let mset = {
+            let mut mset = MultiSet::new();
+
+            mset.insert('a');
+            mset.insert_times('b', 2);
+
+            mset
+        };
+
+        let v = mset.into_iter().collect::<Vec<(char, usize)>>();
+        assert!(v == [('a', 1), ('b', 2)] || v == [('b', 2), ('a', 1)]);
+    }
+
+    #[test]
     fn test_eq() {
         let mut mset = MultiSet::new();
 
