@@ -758,6 +758,18 @@ impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
     }
 }
 
+impl<K: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<K, S> {
+    fn eq(&self, other: &MultiSet<K, S>) -> bool {
+        if self.len() != other.len() {
+            return false;
+        }
+
+        self.iter().all(|(key, value)| other.get(key).map_or(false, |v| *value == *v))
+    }
+}
+
+impl<K: Eq + Hash, S: BuildHasher> MultiSet<K, S> {}
+
 impl<K: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<K, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_set().entries(self.iter()).finish()
@@ -1003,6 +1015,28 @@ mod tests {
 
         let debug_str = format!("{:?}", mset);
         assert!((debug_str == "{(777, 1), (7, 3)}" ) || (debug_str == "{(7, 3), (777, 1)}"));
+    }
+
+    #[test]
+    fn test_eq() {
+        let mut mset = MultiSet::new();
+
+        mset.insert(1);
+        mset.insert(2);
+        mset.insert(2);
+        mset.insert(3);
+
+        let mut other_mset = MultiSet::new();
+
+        other_mset.insert(1);
+        other_mset.insert(2);
+        other_mset.insert(3);
+
+        assert!(mset != other_mset);
+
+        other_mset.insert(2);
+
+        assert_eq!(mset, other_mset);
     }
 
     #[test]
