@@ -432,10 +432,6 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.shrink_to_fit();
     }
 
-    // pub fn entry(&mut self, key: K) -> Entry<'_, K, usize> {
-    //  // maybe this needs implementing?
-    // }
-
     /// Creat a `MultiSet` with the same BuildHasher type.
     ///
     /// # Examples
@@ -1092,8 +1088,6 @@ mod tests {
             mset.extend(1..100);
         }
     }
-
-    // TODO fn test_replace()
 
     #[test]
     fn test_extend_ref() {
