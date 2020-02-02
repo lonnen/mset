@@ -803,6 +803,18 @@ where
     }
 }
 
+impl<K, S> FromIterator<(K, usize)> for MultiSet<K, S>
+where
+    K: Hash + Eq,
+    S: BuildHasher + Default,
+{
+    fn from_iter<I: IntoIterator<Item = (K, usize)>>(iter: I) -> MultiSet<K, S> {
+        let mut mset = MultiSet::with_hasher(Default::default());
+        mset.extend(iter);
+        mset
+    }
+}
+
 impl<K, S> IntoIterator for MultiSet<K, S>
 where
     K: Hash + Eq + Clone,
