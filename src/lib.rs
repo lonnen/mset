@@ -788,21 +788,6 @@ where
     }
 }
 
-impl<'a, K, S> FromIterator<&'a K> for MultiSet<K, S>
-where
-    K: Hash + Eq + Clone,
-    S: BuildHasher + Default,
-{
-    fn from_iter<I: IntoIterator<Item = &'a K>>(iter: I) -> Self {
-        let iter = iter.into_iter();
-        let mut mset: MultiSet<K, S> = Self::with_hasher(Default::default());
-        for key in iter.map(|ref key| (*key).clone()) {
-            mset.insert(key);
-        }
-        mset
-    }
-}
-
 impl<K, S> FromIterator<(K, usize)> for MultiSet<K, S>
 where
     K: Hash + Eq,
@@ -1057,7 +1042,7 @@ mod tests {
 
     #[test]
     fn test_show_nontrivial() {
-        let mset: MultiSet<usize> = [777, 7, 7, 7].iter().collect();
+        let mset: MultiSet<usize> = [777, 7, 7, 7].iter().cloned().collect();
 
         let debug_str = format!("{:?}", mset);
         assert!((debug_str == "{(777, 1), (7, 3)}") || (debug_str == "{(7, 3), (777, 1)}"));
