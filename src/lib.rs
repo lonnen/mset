@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::default::Default;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
-use std::iter::FromIterator;
+use std::iter::{FromIterator, FusedIterator};
 
 type IntoIter<K> = ::std::collections::hash_map::IntoIter<K, usize>;
 type Iter<'a, K> = ::std::collections::hash_map::Iter<'a, K, usize>;
@@ -621,6 +621,36 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.retain(|k, v| f(k, v));
     }
 
+    /// Visits the values representing the difference,
+    /// i.e., the values that are in `self` but no in `other`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let p: MultiSet<_> = ['a', 'b', 'c', 'd'].iter().cloned().collect();
+    /// let q: MultiSet<_> = ['d', 'b', 'c', 'd'].iter().cloned().collect();
+    ///
+    /// for e in p.difference(&q) {
+    ///     println!("{}", e);
+    /// }
+    ///
+    /// // can be thought of us `p - q`
+    /// let diff: MultiSet<_> = p.difference(&q).collect();
+    /// assert_eq!(diff, ['a'].iter().collect());
+    ///
+    /// // note that difference is not symetric,
+    /// // and `q - p` has a different result:
+    /// let diff: MultiSet<_> = q.difference(&p).collect();
+    /// assert_eq!(diff, ['d'].iter().collect());
+    /// ```
+    pub fn difference<'a>(&'a self, other: &'a MultiSet<K, S>) -> Difference<'a, K, S> {
+        Difference {
+            iter: self.iter(),
+            other,
+        }
+    }
+
     /// Returns `true` if the set contains a value.
     ///
     /// The value may be any borrowed form of the multiset's value type, but
@@ -775,10 +805,10 @@ impl<K: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<K, S> {
 
 impl<K, S> FromIterator<K> for MultiSet<K, S>
 where
-    K: Hash + Eq + Clone,
+    K: Hash + Eq,
     S: BuildHasher + Default,
 {
-    fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> MultiSet<K, S> {
         let iter = iter.into_iter();
         let mut mset: MultiSet<K, S> = MultiSet::with_hasher(Default::default());
         for key in iter {
@@ -880,6 +910,54 @@ where
         for key in iter.into_iter().map(|k| (*k).clone()) {
             self.insert(key.clone());
         }
+    }
+}
+
+pub struct Difference<'a, K, S> {
+    // iterator of the first set
+    iter: Iter<'a, K>,
+    // the second set
+    other: &'a MultiSet<K, S>,
+}
+
+impl<K, S> Clone for Difference<'_, K, S> {
+    fn clone(&self) -> Self {
+        Difference { iter: self.iter.clone(), ..*self }
+    }
+}
+
+impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, K, S> {
+    type Item = &'a K;
+
+    fn next(&mut self) -> Option<&'a K> {
+        loop {
+            let (elem, count) = self.iter.next()?;
+            let other_count = match self.other.get(elem) {
+                Some(c) => c.clone(),
+                None => 0usize,
+            };
+
+            if count > &other_count {
+                let result = count - other_count;
+
+                while result > 0 {
+                    return Some(elem)
+                }
+            }
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let (_, upper) = self.iter.size_hint();
+        (0, upper)
+    }
+}
+
+impl<K: Eq + Hash, S: BuildHasher> FusedIterator for Difference<'_, K, S> { }
+
+impl<K: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, K, S> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
     }
 }
 
@@ -996,6 +1074,22 @@ mod tests {
         mset.clear();
 
         assert!(mset.is_empty());
+    }
+
+    #[test]
+    fn test_difference() {
+        let p: MultiSet<_> = [11, 3, 5, 11].iter().cloned().collect();
+        let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
+
+        let expected = [5, 11];
+        for e in p.difference(&q) {
+            assert!(expected.contains(e));
+        }
+
+        let expected = [1, 6];
+        for e in q.difference(&p) {
+            assert!(expected.contains(e));
+        }
     }
 
     #[test]
