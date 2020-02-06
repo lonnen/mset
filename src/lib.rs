@@ -922,7 +922,10 @@ pub struct Difference<'a, K, S> {
 
 impl<K, S> Clone for Difference<'_, K, S> {
     fn clone(&self) -> Self {
-        Difference { iter: self.iter.clone(), ..*self }
+        Difference {
+            iter: self.iter.clone(),
+            ..*self
+        }
     }
 }
 
@@ -941,7 +944,7 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, K, S> {
                 let result = count - other_count;
 
                 while result > 0 {
-                    return Some(elem)
+                    return Some(elem);
                 }
             }
         }
@@ -953,7 +956,7 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, K, S> {
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> FusedIterator for Difference<'_, K, S> { }
+impl<K: Eq + Hash, S: BuildHasher> FusedIterator for Difference<'_, K, S> {}
 
 impl<K: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, K, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
