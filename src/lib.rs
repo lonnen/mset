@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::default::Default;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
-use std::iter::{FromIterator, FusedIterator};
+use std::iter::{Chain, FromIterator, FusedIterator};
 
 type IntoIter<K> = ::std::collections::hash_map::IntoIter<K, usize>;
 type Iter<'a, K> = ::std::collections::hash_map::Iter<'a, K, usize>;
@@ -651,6 +651,34 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         }
     }
 
+    /// Visits the values representing the symmetric difference,
+    /// i.e., the values that are in `self` or in `other` but not in both.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let p: MultiSet<_> = ['a', 'b', 'c', 'd'].iter().cloned().collect();
+    /// let q: MultiSet<_> = ['d', 'b', 'c', 'd'].iter().cloned().collect();
+    ///
+    /// for e in p.symmetric_difference(&q) {
+    ///     println!("{}", e);
+    /// }
+    ///
+    /// let diff1: MultiSet<_> = p.symmetric_difference(&q).collect();
+    /// let diff2: MultiSet<_> = q.symmetric_difference(&p).collect();
+    /// assert_eq!(diff1, diff2);
+    /// assert_eq!(diff1, ['a', 'd'].iter().collect());
+    /// ```
+    pub fn symmetric_difference<'a>(
+        &'a self,
+        other: &'a MultiSet<K, S>,
+    ) -> SymmetricDifference<'a, K, S> {
+        SymmetricDifference {
+            iter: self.difference(other).chain(other.difference(self)),
+        }
+    }
+
     /// Returns `true` if the set contains a value.
     ///
     /// The value may be any borrowed form of the multiset's value type, but
@@ -964,6 +992,32 @@ impl<K: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, K,
     }
 }
 
+/// A lazy iterator producing elements in the symmetric difference of `MultiSet`s.
+///
+/// This `struct` is created by the [`symmetric_difference`] method on [`MultiSet`].
+/// See its documentation for more.
+pub struct SymmetricDifference<'a, K: 'a, S: 'a> {
+    iter: Chain<Difference<'a, K, S>, Difference<'a, K, S>>
+}
+
+impl<K, S> Clone for SymmetricDifference<'_, K, S> {
+    fn clone(&self) -> Self {
+        SymmetricDifference { iter: self.iter.clone() }
+    }
+}
+
+impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for SymmetricDifference<'a, K, S> {
+    type Item = &'a K;
+
+    fn next(&mut self) -> Option<&'a K> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
+}
+
 #[cfg(test)]
 #[allow(unused_variables)]
 mod tests {
@@ -1093,6 +1147,20 @@ mod tests {
         for e in q.difference(&p) {
             assert!(expected.contains(e));
         }
+    }
+
+    #[test]
+    fn test_symmetric_difference() {
+        let p: MultiSet<_> = [1, 3, 3, 3, 3, 5, 9, 11].iter().collect();
+        let q: MultiSet<_> = [2, 3, 3, 5, 9, 14, 22].iter().collect();
+
+        let mut i = 0;
+        let expected = [1, 3, 11, 2, 14, 22];
+        for e in p.symmetric_difference(&q) {
+            assert!(expected.contains(e));
+            i += *e;
+        }
+        assert_eq!(i, 53);
     }
 
     #[test]
