@@ -997,12 +997,14 @@ impl<K: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, K,
 /// This `struct` is created by the [`symmetric_difference`] method on [`MultiSet`].
 /// See its documentation for more.
 pub struct SymmetricDifference<'a, K: 'a, S: 'a> {
-    iter: Chain<Difference<'a, K, S>, Difference<'a, K, S>>
+    iter: Chain<Difference<'a, K, S>, Difference<'a, K, S>>,
 }
 
 impl<K, S> Clone for SymmetricDifference<'_, K, S> {
     fn clone(&self) -> Self {
-        SymmetricDifference { iter: self.iter.clone() }
+        SymmetricDifference {
+            iter: self.iter.clone(),
+        }
     }
 }
 
