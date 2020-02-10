@@ -204,54 +204,6 @@ impl<K, S> MultiSet<K, S> {
         self.elem_counts.keys()
     }
 
-    /// An iterator visiting all values in arbitrary order.
-    /// The iterator element type is `&'a V`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset: MultiSet<char> = MultiSet::new();
-    /// mset.insert('a');
-    /// mset.insert('a');
-    /// mset.insert('b');
-    /// mset.insert('c');
-    ///
-    /// // Will print in an arbitrary order.
-    /// for val in mset.values() {
-    ///     println!("{}", val);
-    /// }
-    /// ```
-    pub fn values(&self) -> Values<K, usize> {
-        self.elem_counts.values()
-    }
-
-    /// An iterator visiting all values mutably in arbitrary order.
-    /// The iterator element type is `&'a mut V`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset: MultiSet<char> = MultiSet::new();
-    /// mset.insert_times('a', 1);
-    /// mset.insert_times('b', 2);
-    /// mset.insert_times('c', 3);
-    ///
-    /// for val in mset.values_mut() {
-    ///     *val = *val + 10;
-    /// }
-    ///
-    /// for val in mset.values() {
-    ///     println!("{}", val);
-    /// }
-    /// ```
-    pub fn values_mut(&mut self) -> ValuesMut<K, usize> {
-        self.elem_counts.values_mut()
-    }
-
     /// Returns the number of elements int he map.
     ///
     /// # Examples
