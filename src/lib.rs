@@ -679,6 +679,29 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         }
     }
 
+    /// Visits the values representing the union, i.e., all the values in `self` or `other`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let p: MultiSet<_> = ['a', 'b', 'c', 'd'].iter().cloned().collect();
+    /// let q: MultiSet<_> = ['b', 'c', 'd'].iter().cloned().collect();
+    ///
+    /// // Print 'a', 'b', 'b', 'c', 'c', 'd', 'd', 'd' in an arbitrary order.
+    /// for e in p.union(&q) {
+    ///     println!("{}", e);
+    /// }
+    ///
+    /// let union: MultiSet<_> = p.union(&q).collect();
+    /// assert_eq!(union, ['a', 'b', 'b', 'c', 'c', 'd', 'd'].iter().collect());
+    /// ```
+    pub fn union<'a>(&'a self, other: &'a MultiSet<K, S>) -> Union<'a, K> {
+        Union {
+            iter: self.iter().chain(other.iter()),
+        }
+    }
+
     /// Returns `true` if the set contains a value.
     ///
     /// The value may be any borrowed form of the multiset's value type, but
@@ -941,6 +964,13 @@ where
     }
 }
 
+/// A lazy iterator producing elements in the difference of `MultiSet`s.
+///
+/// This `struct` is created by the [`difference`] method on [`MultiSet`].
+/// See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// [`difference`]: struct.MultiSet.html#method.difference
 pub struct Difference<'a, K, S> {
     // iterator of the first set
     iter: Iter<'a, K>,
@@ -996,6 +1026,9 @@ impl<K: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, K,
 ///
 /// This `struct` is created by the [`symmetric_difference`] method on [`MultiSet`].
 /// See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// [`symmetric_difference`]: struct.MultiSet.html#method.symmetric_difference
 pub struct SymmetricDifference<'a, K: 'a, S: 'a> {
     iter: Chain<Difference<'a, K, S>, Difference<'a, K, S>>,
 }
@@ -1013,6 +1046,50 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for SymmetricDifference<'a, K, S
 
     fn next(&mut self) -> Option<&'a K> {
         self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
+}
+
+/// A lazy iterator producing elements in the union of `MultiSets`s.
+///
+/// This `struct` is created by the [`union`] method on [`MultiSet`].
+/// See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// [`union`]: struct.MultiSet.html#method.union
+pub struct Union<'a, K: 'a> {
+    iter: Chain<Iter<'a, K>, Iter<'a, K>>,
+}
+
+impl<K> Clone for Union<'_, K> {
+    fn clone(&self) -> Self {
+        Union { iter: self.iter.clone() }
+    }
+}
+
+impl<K: fmt::Debug + Eq + Hash> fmt::Debug for Union<'_, K> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f. debug_list().entries(self.clone()).finish()
+    }
+}
+
+impl<K: Eq + Hash> FusedIterator for Union<'_, K> {
+}
+
+impl<'a, K: Eq + Hash> Iterator for Union<'a, K> {
+    type Item = &'a K;
+
+    fn next(&mut self) -> Option<&'a K> {
+        loop {
+            let (elem, count) = self.iter.next()?;
+            let result = count.clone();
+            while result > 0 {
+                return Some(elem);
+            }
+        }
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -1133,6 +1210,17 @@ mod tests {
         mset.clear();
 
         assert!(mset.is_empty());
+    }
+
+    #[test]
+    fn test_union() {
+        let p: MultiSet<_> = [11, 3, 5, 11].iter().cloned().collect();
+        let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
+
+        let expected = [1, 3, 3, 5, 6, 11, 11, 11];
+        for e in p.difference(&q) {
+            assert!(expected.contains(e));
+        }
     }
 
     #[test]
