@@ -178,7 +178,9 @@ impl<K, S> MultiSet<K, S> {
     /// }
     /// ```
     pub fn iter(&self) -> Iter<K> {
-        Iter { iter: self.elem_counts.iter() }
+        Iter {
+            iter: self.elem_counts.iter(),
+        }
     }
 
     /// An iterator visiting all distinct elements in arbitrary order.
@@ -778,7 +780,7 @@ impl<K: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<K, S> {
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> Eq for MultiSet<K, S> { }
+impl<K: Eq + Hash, S: BuildHasher> Eq for MultiSet<K, S> {}
 
 impl<K: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<K, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -822,7 +824,9 @@ where
     type IntoIter = IntoIter<K>;
 
     fn into_iter(self) -> IntoIter<K> {
-        IntoIter { iter: self.elem_counts.into_iter() }
+        IntoIter {
+            iter: self.elem_counts.into_iter(),
+        }
     }
 }
 
@@ -896,7 +900,9 @@ pub struct Iter<'a, K: 'a> {
 
 impl<K> Clone for Iter<'_, K> {
     fn clone(&self) -> Self {
-        Iter { iter: self.iter.clone() }
+        Iter {
+            iter: self.iter.clone(),
+        }
     }
 }
 
@@ -934,7 +940,7 @@ impl<K: fmt::Debug> fmt::Debug for Iter<'_, K> {
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`iter`]: struct.MultiSet.html#method.iter
 pub struct IntoIter<K> {
-    iter: ::std::collections::hash_map::IntoIter<K, usize>
+    iter: ::std::collections::hash_map::IntoIter<K, usize>,
 }
 
 impl<K> Iterator for IntoIter<K> {
@@ -1075,18 +1081,19 @@ pub struct Union<'a, K: 'a> {
 
 impl<K> Clone for Union<'_, K> {
     fn clone(&self) -> Self {
-        Union { iter: self.iter.clone() }
+        Union {
+            iter: self.iter.clone(),
+        }
     }
 }
 
 impl<K: fmt::Debug + Eq + Hash> fmt::Debug for Union<'_, K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f. debug_list().entries(self.clone()).finish()
+        f.debug_list().entries(self.clone()).finish()
     }
 }
 
-impl<K: Eq + Hash> FusedIterator for Union<'_, K> {
-}
+impl<K: Eq + Hash> FusedIterator for Union<'_, K> {}
 
 impl<'a, K: Eq + Hash> Iterator for Union<'a, K> {
     type Item = &'a K;
