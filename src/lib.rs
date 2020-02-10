@@ -778,8 +778,6 @@ impl<K: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<K, S> {
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> MultiSet<K, S> {}
-
 impl<K: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<K, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_set().entries(self.iter()).finish()
