@@ -7,10 +7,6 @@ use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
 
-type IntoIter<K> = ::std::collections::hash_map::IntoIter<K, usize>;
-type Iter<'a, K> = ::std::collections::hash_map::Iter<'a, K, usize>;
-type IterMut<'a, K> = ::std::collections::hash_map::IterMut<'a, K, usize>;
-
 /// A hash multi set implemented as a `HashMap` where the value is `usize`.
 ///
 /// As with the [`HashMap`] type, a `MultiSet` requires that the elements
@@ -182,7 +178,7 @@ impl<K, S> MultiSet<K, S> {
     /// }
     /// ```
     pub fn iter(&self) -> Iter<K> {
-        self.elem_counts.iter()
+        Iter { iter: self.elem_counts.iter() }
     }
 
     /// An iterator visiting all distinct elements in arbitrary order.
@@ -810,22 +806,6 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     }
 }
 
-pub struct Drain<'a, K: 'a> {
-    iter: MapDrain<'a, K, usize>,
-}
-
-impl<'a, K> Iterator for Drain<'a, K> {
-    type Item = (K, usize);
-
-    fn next(&mut self) -> Option<(K, usize)> {
-        self.iter.next()
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.iter.size_hint()
-    }
-}
-
 impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
     /// Creates a new, empty `MultiSet`.
     fn default() -> Self {
@@ -889,8 +869,8 @@ where
     type Item = (K, usize);
     type IntoIter = IntoIter<K>;
 
-    fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
-        self.elem_counts.into_iter()
+    fn into_iter(self) -> IntoIter<K> {
+        IntoIter { iter: self.elem_counts.into_iter() }
     }
 }
 
@@ -903,20 +883,7 @@ where
     type IntoIter = Iter<'a, K>;
 
     fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
-        self.elem_counts.iter()
-    }
-}
-
-impl<'a, K, S> IntoIterator for &'a mut MultiSet<K, S>
-where
-    K: Hash + Eq,
-    S: BuildHasher,
-{
-    type Item = (&'a K, &'a mut usize);
-    type IntoIter = IterMut<'a, K>;
-
-    fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
-        self.elem_counts.iter_mut()
+        self.iter()
     }
 }
 
@@ -961,6 +928,96 @@ where
         for key in iter.into_iter().map(|k| (*k).clone()) {
             self.insert(key.clone());
         }
+    }
+}
+
+/// An iterator over the items of a `MultiSet`.
+///
+/// This `struct` is created by the [`iter`] method on [`MultiSet`].
+/// See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// [`iter`]: struct.MultiSet.html#method.iter
+pub struct Iter<'a, K: 'a> {
+    iter: ::std::collections::hash_map::Iter<'a, K, usize>,
+}
+
+impl<K> Clone for Iter<'_, K> {
+    fn clone(&self) -> Self {
+        Iter { iter: self.iter.clone() }
+    }
+}
+
+impl<'a, K> Iterator for Iter<'a, K> {
+    type Item = (&'a K, &'a usize);
+
+    fn next(&mut self) -> Option<(&'a K, &'a usize)> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
+}
+
+impl<K> ExactSizeIterator for Iter<'_, K> {
+    fn len(&self) -> usize {
+        self.iter.len()
+    }
+}
+
+impl<K> FusedIterator for Iter<'_, K> {}
+
+impl<K: fmt::Debug> fmt::Debug for Iter<'_, K> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
+    }
+}
+
+/// An owning iterator over the items of a `MultiSet`.
+///
+/// This `struct` is created by the [`into_iter`] method on [`MultiSet`] (provided by the
+/// `IntoIterator` trait). See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// [`iter`]: struct.MultiSet.html#method.iter
+pub struct IntoIter<K> {
+    iter: ::std::collections::hash_map::IntoIter<K, usize>
+}
+
+impl<K> Iterator for IntoIter<K> {
+    type Item = (K, usize);
+
+    fn next(&mut self) -> Option<(K, usize)> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
+}
+
+impl<K> ExactSizeIterator for IntoIter<K> {
+    fn len(&self) -> usize {
+        self.iter.len()
+    }
+}
+
+impl<K> FusedIterator for IntoIter<K> {}
+
+pub struct Drain<'a, K: 'a> {
+    iter: MapDrain<'a, K, usize>,
+}
+
+impl<'a, K> Iterator for Drain<'a, K> {
+    type Item = (K, usize);
+
+    fn next(&mut self) -> Option<(K, usize)> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
     }
 }
 
