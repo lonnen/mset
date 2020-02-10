@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 use std::collections::hash_map::RandomState;
-use std::collections::hash_map::{Drain as MapDrain, Entry, Keys, Values, ValuesMut};
+use std::collections::hash_map::{Drain as MapDrain, Entry, Keys};
 use std::collections::HashMap;
 use std::default::Default;
 use std::fmt;
@@ -196,11 +196,11 @@ impl<K, S> MultiSet<K, S> {
     /// mset.insert('c');
     ///
     /// // Will print in an arbitrary order.
-    /// for key in mset.keys() {
-    ///     println!("{}", key);
+    /// for e in mset.elements() {
+    ///     println!("{}", e);
     /// }
     /// ```
-    pub fn keys(&self) -> Keys<K, usize> {
+    pub fn elements(&self) -> Keys<K, usize> {
         self.elem_counts.keys()
     }
 
@@ -734,11 +734,11 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         self.elem_counts.get_mut(key)
     }
 
-    /// Returns the key-value pair corresponding to the supplied key.
+    /// Returns the element-multiplicity pair corresponding to the supplied key.
     ///
-    /// The supplied key may be any borrowed form of the map's key type,
+    /// The supplied element may be any borrowed form of the mset's type,
     /// but `Hash` and `Eq` on the borrowed form *must* match those for
-    /// the key type.
+    /// the element type.
     ///
     /// # Examples
     ///
@@ -747,10 +747,10 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///
     /// let mut mset: MultiSet<char> = MultiSet::new();
     /// mset.insert('a');
-    /// assert_eq!(mset.get_key_value(&'a'), Some((&'a', &1)));
-    /// assert_eq!(mset.get_key_value(&'b'), None);
+    /// assert_eq!(mset.get_element_multiplicity(&'a'), Some((&'a', &1)));
+    /// assert_eq!(mset.get_element_multiplicity(&'b'), None);
     /// ```
-    pub fn get_key_value(&self, key: &K) -> Option<(&K, &usize)>
+    pub fn get_element_multiplicity(&self, key: &K) -> Option<(&K, &usize)>
     where
         K: Borrow<K>,
     {
