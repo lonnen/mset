@@ -5,6 +5,4 @@ jobs:
       - image: cimg/rust:1.40.0
     steps:
       - checkout
-      - run: rustup component add clippy
-      - run: cargo clippy --all-targets --all-features -- -D warnings
       - run: cargo test
