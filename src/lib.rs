@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::cmp::min;
 use std::collections::hash_map::RandomState;
 use std::collections::hash_map::{Drain as MapDrain, Entry, Keys};
 use std::collections::HashMap;
@@ -629,6 +630,32 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         }
     }
 
+    /// Visits the values representing the intersection,
+    /// i.e., the values that are both in `self` and `other`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let p: MultiSet<_> = ['a', 'b', 'c', 'd'].iter().cloned().collect();
+    /// let q: MultiSet<_> = ['d', 'b', 'c', 'd'].iter().cloned().collect();
+    ///
+    /// for e in p.intersection(&q) {
+    ///     println!("{}", e);
+    /// }
+    ///
+    /// let diff1: MultiSet<_> = p.symmetric_difference(&q).collect();
+    /// let diff2: MultiSet<_> = q.symmetric_difference(&p).collect();
+    /// assert_eq!(diff1, diff2);
+    /// assert_eq!(diff1, ['a', 'd'].iter().collect());
+    /// ```
+    pub fn intersection<'a>(&'a self, other: &'a MultiSet<K, S>) -> Intersection<'a, K, S> {
+        Intersection {
+            iter: self.iter(),
+            other: other,
+        }
+    }
+
     /// Visits the values representing the union, i.e., all the values in `self` or `other`.
     ///
     /// # Examples
@@ -979,6 +1006,51 @@ impl<'a, K> Iterator for Drain<'a, K> {
     }
 }
 
+/// A lazy iterator producing elements in the intersection of `MultiSets`s.
+///
+/// This `struct` is created by the [`intersection`] method on [`MultiSet`].
+/// See its documentation for more.
+///
+/// ['MultiSet`]: struct.MultiSet.html
+/// [intersection`]: struct.MultiSet.html#method.intersection
+pub struct Intersection<'a, K: 'a, S: 'a> {
+    // iterator of the first set
+    iter: Iter<'a, K>,
+    // the second set
+    other: &'a MultiSet<K, S>,
+}
+
+impl<K, S> Clone for Intersection<'_, K, S> {
+    fn clone(&self) -> Self {
+        Intersection { iter: self.iter.clone(), ..* self }
+    }
+}
+
+impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Intersection<'a, K, S> {
+    type Item = &'a K;
+
+    fn next(&mut self) -> Option<&'a K> {
+        loop {
+            let (elem, count) = self.iter.next()?;
+            let other_count  = match self.other.get(elem) {
+                Some(c) => c.clone(),
+                None => 0usize,
+            };
+
+            for _ in 0..min(*count, other_count) {
+                return Some(elem);
+            };
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let (_, upper) = self.iter.size_hint();
+        (0, upper)
+    }
+}
+
+impl<K: Eq + Hash, S: BuildHasher> FusedIterator for Intersection<'_, K, S> {}
+
 /// A lazy iterator producing elements in the difference of `MultiSet`s.
 ///
 /// This `struct` is created by the [`difference`] method on [`MultiSet`].
@@ -1008,7 +1080,7 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, K, S> {
     fn next(&mut self) -> Option<&'a K> {
         loop {
             let (elem, count) = self.iter.next()?;
-            let other_count = match self.other.get(elem) {
+            let other_count  = match self.other.get(elem) {
                 Some(c) => c.clone(),
                 None => 0usize,
             };
