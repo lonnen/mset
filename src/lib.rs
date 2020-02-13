@@ -402,6 +402,61 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         Self { elem_counts: rhs }
     }
 
+    /// Returns `true` if the multiset is a subset of another,
+    /// i.e., `other` contains at least all the values in `self`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let msup: MultiSet<_> = [1, 2, 2, 3].iter().cloned().collect();
+    /// let mut mset = MultiSet::new();
+    ///
+    /// assert!(mset.is_subset(&msup));
+    /// mset.insert(2);
+    /// assert!(mset.is_subset(&msup));
+    /// mset.insert(2);
+    /// assert!(mset.is_subset(&msup));
+    /// mset.insert(2);
+    /// assert_eq!(mset.is_subset(&msup), false);
+    /// ```
+    pub fn is_subset(&self, other: &MultiSet<K, S>) -> bool {
+        self.iter().all(|(e, m)| {
+            match other.get(e) {
+                Some(o_m) => m <= o_m,
+                None => false,
+            }
+        })
+    }
+
+    /// Returns `true` if the multiset is a superset of another,
+    /// i.e., `self` contains at least all the values in `other`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let msub: MultiSet<_> = [1, 2, 2].iter().cloned().collect();
+    /// let mut mset = MultiSet::new();
+    ///
+    /// assert_eq!(mset.is_superset(&msub), false);
+    ///
+    /// mset.insert(0);
+    /// mset.insert(1);
+    /// assert_eq!(mset.is_superset(&msub), false);
+    ///
+    /// mset.insert(2);
+    /// assert_eq!(mset.is_superset(&msub), false);
+    ///
+    /// mset.insert(2);
+    /// assert_eq!(mset.is_superset(&msub), true);
+    /// ```
+    pub fn is_superset(&self, other: &MultiSet<K,S>) -> bool {
+        other.is_subset(self)
+    }
+
     /// Add a value to the multi set.
     ///
     /// If the set did not have this value present, `true` is returned.
