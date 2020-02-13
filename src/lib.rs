@@ -402,6 +402,28 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
         Self { elem_counts: rhs }
     }
 
+    /// Returns `true` if `self` has no elements in common with `other`.
+    /// This is equivalent to checking for an empty intersection.
+    ///
+    /// # Examples
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let p: MultiSet<_> = [1, 2, 2, 3].iter().cloned().collect();
+    /// let mut q = MultiSet::new();
+    ///
+    /// assert!(p.is_disjoint(&q));
+    /// q.insert(0);
+    /// assert!(p.is_disjoint(&q));
+    /// q.insert(4);
+    /// assert!(p.is_disjoint(&q));
+    /// q.insert(3);
+    /// assert_eq!(p.is_disjoint(&q), false);
+    /// ```
+    pub fn is_disjoint(&self, other: &MultiSet<K, S>) -> bool {
+        self.iter().all(|(e, _)| { !other.contains(e) })
+    }
+
     /// Returns `true` if the multiset is a subset of another,
     /// i.e., `other` contains at least all the values in `self`.
     ///
