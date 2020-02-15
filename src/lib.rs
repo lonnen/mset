@@ -1389,6 +1389,33 @@ mod tests {
     }
 
     #[test]
+    fn test_intersection() {
+        let mut p = MultiSet::new();
+        let mut q = MultiSet::new();
+
+        assert!(p.intersection(&q).next().is_none());
+
+        p.insert(11);
+        p.insert(11);
+        p.insert(1);
+        p.insert(3);
+
+        q.insert(3);
+        q.insert(11);
+        q.insert(11);
+        q.insert(11);
+        q.insert(77);
+
+        let mut i = 0;
+        let expected = [3, 11];
+        for x in p.intersection(&q) {
+            assert!(expected.contains(x));
+            i += x;
+        }
+        assert_eq!(i, 14);
+    }
+
+    #[test]
     fn test_difference() {
         let p: MultiSet<_> = [11, 3, 5, 11].iter().cloned().collect();
         let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
