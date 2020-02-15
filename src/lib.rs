@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::cmp::min;
 use std::collections::hash_map::RandomState;
-use std::collections::hash_map::{Drain as MapDrain, Entry, Keys};
+use std::collections::hash_map::{Drain as MapDrain, Entry, Iter as MapIter, Keys};
 use std::collections::HashMap;
 use std::default::Default;
 use std::fmt;
@@ -182,6 +182,26 @@ impl<K, S> MultiSet<K, S> {
         Iter {
             iter: self.elem_counts.iter(),
         }
+    }
+
+    /// An iterator visitng all distinct elements and counts in arbitrary order.
+    /// The iterator element type is `&'a (K, usize)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let mut mset = MultiSet::new();
+    /// mset.insert("a");
+    /// mset.insert("b");
+    ///
+    /// // Will print in an arbitrary order.
+    /// for (elem, count) in mset.element_counts() {
+    ///     println!("{}: {}", elem, count);
+    /// }
+    /// ```
+    pub fn element_counts(&self) -> MapIter<K, usize> {
+        self.elem_counts.iter()
     }
 
     /// An iterator visiting all distinct elements in arbitrary order.
@@ -1338,6 +1358,28 @@ mod tests {
 
         let mut observed: u32 = 0;
         let mut i = mset.iter();
+
+        loop {
+            match i.next() {
+                Some((k, v)) => {
+                    observed |= 1 << *k;
+                    assert_eq!(*v, 1);
+                }
+                None => break,
+            }
+        }
+        assert_eq!(observed, 0xFFFF_FFFF);
+    }
+
+    #[test]
+    fn test_iterator_over_element_counts() {
+        let mut mset = MultiSet::new();
+        for i in 0..32 {
+            assert!(mset.insert(i));
+        }
+
+        let mut observed: u32 = 0;
+        let mut i = mset.element_counts();
 
         loop {
             match i.next() {
