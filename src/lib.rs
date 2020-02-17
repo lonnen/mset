@@ -441,7 +441,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert_eq!(p.is_disjoint(&q), false);
     /// ```
     pub fn is_disjoint(&self, other: &MultiSet<K, S>) -> bool {
-        self.iter().all(|(e, _)| { !other.contains(e) })
+        self.iter().all(|(e, _)| !other.contains(e))
     }
 
     /// Returns `true` if the multiset is a subset of another,
@@ -464,11 +464,9 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert_eq!(mset.is_subset(&msup), false);
     /// ```
     pub fn is_subset(&self, other: &MultiSet<K, S>) -> bool {
-        self.iter().all(|(e, m)| {
-            match other.get(e) {
-                Some(o_m) => m <= o_m,
-                None => false,
-            }
+        self.iter().all(|(e, m)| match other.get(e) {
+            Some(o_m) => m <= o_m,
+            None => false,
         })
     }
 
@@ -495,7 +493,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// mset.insert(2);
     /// assert_eq!(mset.is_superset(&msub), true);
     /// ```
-    pub fn is_superset(&self, other: &MultiSet<K,S>) -> bool {
+    pub fn is_superset(&self, other: &MultiSet<K, S>) -> bool {
         other.is_subset(self)
     }
 
@@ -1119,7 +1117,10 @@ pub struct Intersection<'a, K: 'a, S: 'a> {
 
 impl<K, S> Clone for Intersection<'_, K, S> {
     fn clone(&self) -> Self {
-        Intersection { iter: self.iter.clone(), ..* self }
+        Intersection {
+            iter: self.iter.clone(),
+            ..*self
+        }
     }
 }
 
@@ -1129,14 +1130,14 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Intersection<'a, K, S> {
     fn next(&mut self) -> Option<&'a K> {
         loop {
             let (elem, count) = self.iter.next()?;
-            let other_count  = match self.other.get(elem) {
+            let other_count = match self.other.get(elem) {
                 Some(c) => c.clone(),
                 None => 0usize,
             };
 
             for _ in 0..min(*count, other_count) {
                 return Some(elem);
-            };
+            }
         }
     }
 
@@ -1177,7 +1178,7 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, K, S> {
     fn next(&mut self) -> Option<&'a K> {
         loop {
             let (elem, count) = self.iter.next()?;
-            let other_count  = match self.other.get(elem) {
+            let other_count = match self.other.get(elem) {
                 Some(c) => c.clone(),
                 None => 0usize,
             };
