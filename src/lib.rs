@@ -7,7 +7,7 @@ use std::default::Default;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
-use std::ops::{BitAnd, BitOr};
+use std::ops::{BitAnd, BitOr, BitXor};
 
 /// A hash multi set implemented as a `HashMap` where the value is `usize`.
 ///
@@ -947,6 +947,36 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for 
     /// ```
     fn bitand(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
         self.intersection(rhs).cloned().collect()
+    }
+}
+
+impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<K, S>> for &MultiSet<K, S> {
+    type Output = MultiSet<K, S>;
+
+    /// Returns the symmetric difference of `self` and `rhs` (right hand side) as a
+    /// new `MultiSet<K, S>`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let p: MultiSet<_> = vec![1, 2, 3, 3].into_iter().collect();
+    /// let q: MultiSet<_> = vec![3, 4, 5].into_iter().collect();
+    ///
+    /// let mset = &p ^ &q;
+    ///
+    /// let mut i = 0;
+    /// let expected = [1, 2, 3, 4, 5];
+    /// for (e, m) in &mset {
+    ///     assert!(expected.contains(e));
+    ///     i += (e * m);
+    /// }
+    ///
+    /// assert_eq!(i, 15);
+    /// ```
+    fn bitxor(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
+        self.symmetric_difference(rhs).cloned().collect()
     }
 }
 
