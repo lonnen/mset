@@ -1402,12 +1402,12 @@ impl<'a, K: Eq + Hash> Iterator for Union<'a, K> {
 }
 
 #[cfg(test)]
-#[allow(unused_variables)]
-mod tests {
-    use super::*;
+mod test_mset {
+    use super::MultiSet;
+    use super::RandomState;
 
     #[test]
-    fn test_create_new_msets() {
+    fn test_zero_capacity() {
         type MSC = MultiSet<char>;
 
         let mset = MSC::new();
@@ -1536,6 +1536,53 @@ mod tests {
         mset.clear();
 
         assert!(mset.is_empty());
+    }
+
+    #[test]
+    fn test_disjoint() {
+        let mut p = MultiSet::new();
+        let mut q = MultiSet::new();
+
+        assert!(p.is_disjoint(&q));
+        assert!(p.is_disjoint(&q));
+
+        p.insert(5);
+        q.insert(6);
+
+        assert!(p.is_disjoint(&q));
+        assert!(p.is_disjoint(&q));
+
+        p.insert(7);
+        p.insert(9);
+        q.insert(4);
+        q.insert(2);
+
+        assert!(p.is_disjoint(&q));
+        assert!(p.is_disjoint(&q));
+
+        p.insert(2);
+
+        assert_eq!(p.is_disjoint(&q), false);
+        assert_eq!(p.is_disjoint(&q), false);
+    }
+
+    #[test]
+    fn test_subset_and_superset() {
+        let mut p: MultiSet<_> = [0, 5, 11, 7].iter().cloned().collect();
+        let mut q: MultiSet<_> = [0, 7, 19, 250, 11, 200].iter().cloned().collect();
+
+        assert_eq!(p.is_subset(&q), false);
+        assert_eq!(p.is_superset(&q), false);
+        assert_eq!(q.is_subset(&p), false);
+        assert_eq!(q.is_superset(&p), false);
+
+        p.insert(5);
+        q.insert_times(5, 2);
+
+        assert_eq!(p.is_subset(&q), true);
+        assert_eq!(p.is_superset(&q), false);
+        assert_eq!(q.is_subset(&p), false);
+        assert_eq!(q.is_superset(&p), true);
     }
 
     #[test]
@@ -1732,7 +1779,7 @@ mod tests {
     #[test]
     fn test_retain() {
         let mut mset: MultiSet<i32> = [1, 2, 3, 4, 5, 4, 3, 2, 1].iter().cloned().collect();
-        mset.retain(|&k, v| k < 3);
+        mset.retain(|&k, _v| k < 3);
         assert_eq!(mset.len(), 2);
         assert_eq!(mset.get(&1), Some(&2usize));
         assert_eq!(mset.get(&2), Some(&2usize));
