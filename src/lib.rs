@@ -903,18 +903,18 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<K, S>> for &
     /// use mset::MultiSet;
     ///
     /// let p: MultiSet<_> = vec![1, 2, 3, 3].into_iter().collect();
-    /// let q: MultiSet<_> = vec![3, 4, 5].into_iter().collect();
+    /// let q: MultiSet<_> = vec![3, 3, 4, 5].into_iter().collect();
     ///
     /// let mset = &p | &q;
     ///
     /// let mut i = 0;
-    /// let expected = [1, 2, 3, 4, 5];
+    /// let expected = [1, 2, 3, 3, 4, 5];
     /// for (e, m) in &mset {
     ///     assert!(expected.contains(e));
     ///     i += (e * m);
     /// }
     ///
-    /// assert_eq!(i, 18);
+    /// assert_eq!(i, expected.iter().sum());
     /// ```
     fn bitor(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
         self.union(rhs).cloned().collect()
@@ -931,8 +931,8 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for 
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let p: MultiSet<_> = vec![1, 2, 3, 3].into_iter().collect();
-    /// let q: MultiSet<_> = vec![3, 4, 5].into_iter().collect();
+    /// let p: MultiSet<_> = vec![1, 2, 3, 3, 3].into_iter().collect();
+    /// let q: MultiSet<_> = vec![2, 3, 4, 5].into_iter().collect();
     ///
     /// let mset = &p & &q;
     ///
@@ -940,10 +940,11 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for 
     /// let expected = [2, 3];
     /// for (e, m) in &mset {
     ///     assert!(expected.contains(e));
+    ///     println!("{} {}", e, m);
     ///     i += (e * m);
     /// }
     ///
-    /// assert_eq!(i, 3);
+    /// assert_eq!(i, expected.iter().sum());
     /// ```
     fn bitand(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
         self.intersection(rhs).cloned().collect()
@@ -973,7 +974,7 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<K, S>> for 
     ///     i += (e * m);
     /// }
     ///
-    /// assert_eq!(i, 15);
+    /// assert_eq!(i, expected.iter().sum());
     /// ```
     fn bitxor(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
         self.symmetric_difference(rhs).cloned().collect()
@@ -1002,7 +1003,7 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<K, S>> for &Mu
     ///     i += (e * m);
     /// }
     ///
-    /// assert_eq!(i, 6);
+    /// assert_eq!(i, expected.iter().sum());
     /// ```
     fn sub(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
         self.difference(rhs).cloned().collect()
@@ -1590,10 +1591,14 @@ mod test_mset {
         let p: MultiSet<_> = [11, 3, 5, 11].iter().cloned().collect();
         let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
 
-        let expected = [1, 3, 3, 5, 6, 11, 11, 11];
-        for e in p.difference(&q) {
+        let mut i = 0;
+        let expected = [1, 3, 3, 5, 6, 11, 11];
+        for e in p.union(&q) {
             assert!(expected.contains(e));
+            i += e;
         }
+
+        assert_eq!(i, expected.iter().sum());
     }
 
     #[test]
@@ -1620,7 +1625,7 @@ mod test_mset {
             assert!(expected.contains(x));
             i += x;
         }
-        assert_eq!(i, 14);
+        assert_eq!(i, expected.iter().sum());
     }
 
     #[test]
@@ -1658,7 +1663,7 @@ mod test_mset {
             assert!(expected.contains(e));
             i += *e;
         }
-        assert_eq!(i, 53);
+        assert_eq!(i, expected.iter().sum());
     }
 
     #[test]
