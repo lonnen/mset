@@ -1625,18 +1625,26 @@ mod test_mset {
 
     #[test]
     fn test_difference() {
-        let p: MultiSet<_> = [11, 3, 5, 11].iter().cloned().collect();
+        let p: MultiSet<_> = [3, 5, 5, 11, 11].iter().cloned().collect();
         let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
 
+        let mut i = 0;
         let expected = [5, 11];
         for e in p.difference(&q) {
             assert!(expected.contains(e));
+            i += e;
         }
 
+        assert_eq!(i, expected.iter().sum());
+
+        i = 0;
         let expected = [1, 6];
         for e in q.difference(&p) {
             assert!(expected.contains(e));
+            i += e;
         }
+
+        assert_eq!(i, expected.iter().sum());
     }
 
     #[test]
