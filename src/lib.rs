@@ -892,7 +892,7 @@ impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
     }
 }
 
-impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<K, S>> for &MultiSet<K, S> {
+impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<K, S>> for &MultiSet<K, S> {
     type Output = MultiSet<K, S>;
 
     /// Returns the union of `self` and `rhs` (right hand side) as a new `MultiSet<K, S>`.
@@ -921,7 +921,7 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<K, S>> for &
     }
 }
 
-impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for &MultiSet<K, S> {
+impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for &MultiSet<K, S> {
     type Output = MultiSet<K, S>;
 
     /// Returns the intersection of `self` and `rhs` (right hand side) as a new `MultiSet<K, S>`.
@@ -951,7 +951,7 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for 
     }
 }
 
-impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<K, S>> for &MultiSet<K, S> {
+impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<K, S>> for &MultiSet<K, S> {
     type Output = MultiSet<K, S>;
 
     /// Returns the symmetric difference of `self` and `rhs` (right hand side) as a
@@ -981,7 +981,7 @@ impl<K:Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<K, S>> for 
     }
 }
 
-impl<K:Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<K, S>> for &MultiSet<K, S> {
+impl<K: Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<K, S>> for &MultiSet<K, S> {
     type Output = MultiSet<K, S>;
 
     /// Returns the difference of `self` and `rhs` (right hand side) as a new `MultiSet<K, S>`.
