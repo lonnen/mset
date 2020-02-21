@@ -682,7 +682,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///     println!("{}", e);
     /// }
     ///
-    /// // can be thought of us `p - q`
+    /// // can be thought of as `p - q`
     /// let diff: MultiSet<_> = p.difference(&q).collect();
     /// assert_eq!(diff, ['a'].iter().collect());
     ///
