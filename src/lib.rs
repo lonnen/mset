@@ -105,11 +105,11 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// [`PartialEq`]: trait.PartialEq.html
 /// [`RefCell`]: struct.RefCell.html
 #[derive(Clone)]
-pub struct MultiSet<K, S = RandomState> {
-    elem_counts: HashMap<K, usize, S>,
+pub struct MultiSet<T, S = RandomState> {
+    elem_counts: HashMap<T, usize, S>,
 }
 
-impl<K: Hash + Eq> MultiSet<K, RandomState> {
+impl<T: Hash + Eq> MultiSet<T, RandomState> {
     /// Create an empty `MultiSet`.
     ///
     /// The multi set is initially created with a capacity of 0, so it will not allocate until it
@@ -123,7 +123,7 @@ impl<K: Hash + Eq> MultiSet<K, RandomState> {
     /// let mset: MultiSet<char> = MultiSet::new();
     /// assert_eq!(mset.len(), 0);
     /// ```
-    pub fn new() -> MultiSet<K, RandomState> {
+    pub fn new() -> MultiSet<T, RandomState> {
         MultiSet {
             elem_counts: HashMap::new(),
         }
@@ -141,14 +141,14 @@ impl<K: Hash + Eq> MultiSet<K, RandomState> {
     /// let mset: MultiSet<i32> = MultiSet::with_capacity(10);
     /// assert!(mset.capacity() >= 10);
     /// ```
-    pub fn with_capacity(capacity: usize) -> MultiSet<K, RandomState> {
+    pub fn with_capacity(capacity: usize) -> MultiSet<T, RandomState> {
         MultiSet {
             elem_counts: HashMap::with_capacity(capacity),
         }
     }
 }
 
-impl<K, S> MultiSet<K, S> {
+impl<T, S> MultiSet<T, S> {
     /// Returns the number of elements the multi set can hold without reallocating.
     ///
     /// # Examples
@@ -164,7 +164,7 @@ impl<K, S> MultiSet<K, S> {
     }
 
     /// An iterator visitng all distinct elements and counts in arbitrary order.
-    /// The iterator element type is `&'a (K, usize)`.
+    /// The iterator element type is `&'a (T, usize)`.
     ///
     /// # Examples
     ///
@@ -179,14 +179,14 @@ impl<K, S> MultiSet<K, S> {
     ///     println!("{}: {}", elem, count);
     /// }
     /// ```
-    pub fn iter(&self) -> Iter<K> {
+    pub fn iter(&self) -> Iter<T> {
         Iter {
             iter: self.elem_counts.iter(),
         }
     }
 
     /// An iterator visitng all distinct elements and counts in arbitrary order.
-    /// The iterator element type is `&'a (K, usize)`.
+    /// The iterator element type is `&'a (T, usize)`.
     ///
     /// # Examples
     ///
@@ -201,12 +201,12 @@ impl<K, S> MultiSet<K, S> {
     ///     println!("{}: {}", elem, count);
     /// }
     /// ```
-    pub fn element_counts(&self) -> MapIter<K, usize> {
+    pub fn element_counts(&self) -> MapIter<T, usize> {
         self.elem_counts.iter()
     }
 
     /// An iterator visiting all distinct elements in arbitrary order.
-    /// The iterator element type is `&'a K`.
+    /// The iterator element type is `&'a T`.
     ///
     /// # Examples
     ///
@@ -224,7 +224,7 @@ impl<K, S> MultiSet<K, S> {
     ///     println!("{}", e);
     /// }
     /// ```
-    pub fn elements(&self) -> Keys<K, usize> {
+    pub fn elements(&self) -> Keys<T, usize> {
         self.elem_counts.keys()
     }
 
@@ -277,7 +277,7 @@ impl<K, S> MultiSet<K, S> {
     ///     assert_eq!(v, 2);
     /// }
     /// ```
-    pub fn drain(&mut self) -> Drain<'_, K> {
+    pub fn drain(&mut self) -> Drain<'_, T> {
         Drain {
             iter: self.elem_counts.drain(),
         }
@@ -301,7 +301,7 @@ impl<K, S> MultiSet<K, S> {
     }
 }
 
-impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
+impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// Create an empty `MultiSet` using the specified hasher.
     ///
     /// The created MutliSet has the default initial capacity.
@@ -316,7 +316,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mut mset = MultiSet::with_hasher(s);
     /// mset.insert_times(1, 2);
     /// ```
-    pub fn with_hasher(hash_builder: S) -> MultiSet<K, S> {
+    pub fn with_hasher(hash_builder: S) -> MultiSet<T, S> {
         MultiSet {
             elem_counts: HashMap::with_hasher(hash_builder),
         }
@@ -338,7 +338,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mut mset = MultiSet::with_capacity_and_hasher(10, s);
     /// mset.insert_times(1, 2);
     /// ```
-    pub fn with_capacity_and_hasher(capacity: usize, hash_builder: S) -> MultiSet<K, S> {
+    pub fn with_capacity_and_hasher(capacity: usize, hash_builder: S) -> MultiSet<T, S> {
         MultiSet {
             elem_counts: HashMap::with_capacity_and_hasher(capacity, hash_builder),
         }
@@ -419,7 +419,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let mset: MultiSet<char> = MultiSet::from_hashmap(m);
     /// assert_eq!(mset.len(), 2);
     /// ```
-    pub fn from_hashmap(rhs: HashMap<K, usize, S>) -> Self {
+    pub fn from_hashmap(rhs: HashMap<T, usize, S>) -> Self {
         Self { elem_counts: rhs }
     }
 
@@ -441,7 +441,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// q.insert(3);
     /// assert_eq!(p.is_disjoint(&q), false);
     /// ```
-    pub fn is_disjoint(&self, other: &MultiSet<K, S>) -> bool {
+    pub fn is_disjoint(&self, other: &MultiSet<T, S>) -> bool {
         self.iter().all(|(e, _)| !other.contains(e))
     }
 
@@ -464,7 +464,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// mset.insert(2);
     /// assert_eq!(mset.is_subset(&msup), false);
     /// ```
-    pub fn is_subset(&self, other: &MultiSet<K, S>) -> bool {
+    pub fn is_subset(&self, other: &MultiSet<T, S>) -> bool {
         self.iter().all(|(e, m)| match other.get(e) {
             Some(o_m) => m <= o_m,
             None => false,
@@ -494,7 +494,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// mset.insert(2);
     /// assert_eq!(mset.is_superset(&msub), true);
     /// ```
-    pub fn is_superset(&self, other: &MultiSet<K, S>) -> bool {
+    pub fn is_superset(&self, other: &MultiSet<T, S>) -> bool {
         other.is_subset(self)
     }
 
@@ -515,7 +515,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert!(!mset.insert('a'));
     /// assert_eq!(mset.len(), 1);
     /// ```
-    pub fn insert(&mut self, value: K) -> bool {
+    pub fn insert(&mut self, value: T) -> bool {
         self.insert_times(value, 1)
     }
 
@@ -537,7 +537,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert_eq!(mset.len(), 1);
     /// assert_eq!(mset.get(&'a'), Some(&12));
     /// ```
-    pub fn insert_times(&mut self, value: K, n: usize) -> bool {
+    pub fn insert_times(&mut self, value: T, n: usize) -> bool {
         match self.elem_counts.entry(value) {
             Entry::Vacant(view) => {
                 view.insert(n);
@@ -572,9 +572,9 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// mset.shrink_to_fit();
     /// assert_eq!(mset.capacity(), 0);
     /// ```
-    pub fn remove(&mut self, value: &K) -> bool
+    pub fn remove(&mut self, value: &T) -> bool
     where
-        K: Hash + Eq + Clone,
+        T: Hash + Eq + Clone,
     {
         self.remove_times(value, 1)
     }
@@ -600,9 +600,9 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///
     /// assert!(mset.is_empty());
     /// ```
-    pub fn remove_times(&mut self, value: &K, n: usize) -> bool
+    pub fn remove_times(&mut self, value: &T, n: usize) -> bool
     where
-        K: Hash + Eq + Clone,
+        T: Hash + Eq + Clone,
     {
         match self.elem_counts.entry((*value).clone()) {
             Entry::Occupied(mut view) => {
@@ -644,7 +644,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     ///
     /// [`Eq`]: trait.Eq.html
     /// [`Hash`]: trait.Hash.html
-    pub fn take(&mut self, value: &K) -> Option<usize> {
+    pub fn take(&mut self, value: &T) -> Option<usize> {
         self.elem_counts.remove_entry(value).map(|(_, v)| v)
     }
 
@@ -663,7 +663,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     pub fn retain<F>(&mut self, mut f: F)
     where
-        F: FnMut(&K, &usize) -> bool,
+        F: FnMut(&T, &usize) -> bool,
     {
         self.elem_counts.retain(|k, v| f(k, v));
     }
@@ -691,7 +691,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let diff: MultiSet<_> = q.difference(&p).collect();
     /// assert_eq!(diff, ['d'].iter().collect());
     /// ```
-    pub fn difference<'a>(&'a self, other: &'a MultiSet<K, S>) -> Difference<'a, K, S> {
+    pub fn difference<'a>(&'a self, other: &'a MultiSet<T, S>) -> Difference<'a, T, S> {
         Difference {
             iter: self.iter(),
             other,
@@ -719,8 +719,8 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     pub fn symmetric_difference<'a>(
         &'a self,
-        other: &'a MultiSet<K, S>,
-    ) -> SymmetricDifference<'a, K, S> {
+        other: &'a MultiSet<T, S>,
+    ) -> SymmetricDifference<'a, T, S> {
         SymmetricDifference {
             iter: self.difference(other).chain(other.difference(self)),
         }
@@ -745,7 +745,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert_eq!(diff1, diff2);
     /// assert_eq!(diff1, ['a', 'd'].iter().collect());
     /// ```
-    pub fn intersection<'a>(&'a self, other: &'a MultiSet<K, S>) -> Intersection<'a, K, S> {
+    pub fn intersection<'a>(&'a self, other: &'a MultiSet<T, S>) -> Intersection<'a, T, S> {
         Intersection {
             iter: self.iter(),
             other: other,
@@ -769,7 +769,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// let union: MultiSet<_> = p.union(&q).collect();
     /// assert_eq!(union, ['a', 'b', 'b', 'c', 'c', 'd', 'd'].iter().collect());
     /// ```
-    pub fn union<'a>(&'a self, other: &'a MultiSet<K, S>) -> Union<'a, K> {
+    pub fn union<'a>(&'a self, other: &'a MultiSet<T, S>) -> Union<'a, T> {
         Union {
             iter: self.iter().chain(other.iter()),
         }
@@ -798,7 +798,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// [`Hash`]: trait.Hash.html
     pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool
     where
-        K: Borrow<Q>,
+        T: Borrow<Q>,
         Q: Hash + Eq,
     {
         self.elem_counts.contains_key(value)
@@ -823,7 +823,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&usize>
     where
-        K: Borrow<Q>,
+        T: Borrow<Q>,
         Q: Hash + Eq,
     {
         self.elem_counts.get(key)
@@ -853,7 +853,7 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// ```
     pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut usize>
     where
-        K: Borrow<Q>,
+        T: Borrow<Q>,
         Q: Hash + Eq,
     {
         self.elem_counts.get_mut(key)
@@ -875,15 +875,15 @@ impl<K: Hash + Eq, S: BuildHasher> MultiSet<K, S> {
     /// assert_eq!(mset.get_element_multiplicity(&'a'), Some((&'a', &1)));
     /// assert_eq!(mset.get_element_multiplicity(&'b'), None);
     /// ```
-    pub fn get_element_multiplicity(&self, key: &K) -> Option<(&K, &usize)>
+    pub fn get_element_multiplicity(&self, key: &T) -> Option<(&T, &usize)>
     where
-        K: Borrow<K>,
+        T: Borrow<T>,
     {
         self.elem_counts.get_key_value(key)
     }
 }
 
-impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
+impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
     /// Creates a new, empty `MultiSet`.
     fn default() -> Self {
         MultiSet {
@@ -892,10 +892,10 @@ impl<K: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<K, S> {
     }
 }
 
-impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<K, S>> for &MultiSet<K, S> {
-    type Output = MultiSet<K, S>;
+impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<T, S>> for &MultiSet<T, S> {
+    type Output = MultiSet<T, S>;
 
-    /// Returns the union of `self` and `rhs` (right hand side) as a new `MultiSet<K, S>`.
+    /// Returns the union of `self` and `rhs` (right hand side) as a new `MultiSet<T, S>`.
     ///
     /// # Examples
     ///
@@ -916,15 +916,15 @@ impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<K, S>> for 
     ///
     /// assert_eq!(i, expected.iter().sum());
     /// ```
-    fn bitor(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
+    fn bitor(self, rhs: &MultiSet<T, S>) -> MultiSet<T, S> {
         self.union(rhs).cloned().collect()
     }
 }
 
-impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for &MultiSet<K, S> {
-    type Output = MultiSet<K, S>;
+impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<T, S>> for &MultiSet<T, S> {
+    type Output = MultiSet<T, S>;
 
-    /// Returns the intersection of `self` and `rhs` (right hand side) as a new `MultiSet<K, S>`.
+    /// Returns the intersection of `self` and `rhs` (right hand side) as a new `MultiSet<T, S>`.
     ///
     /// # Examples
     ///
@@ -946,16 +946,16 @@ impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<K, S>> for
     ///
     /// assert_eq!(i, expected.iter().sum());
     /// ```
-    fn bitand(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
+    fn bitand(self, rhs: &MultiSet<T, S>) -> MultiSet<T, S> {
         self.intersection(rhs).cloned().collect()
     }
 }
 
-impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<K, S>> for &MultiSet<K, S> {
-    type Output = MultiSet<K, S>;
+impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<T, S>> for &MultiSet<T, S> {
+    type Output = MultiSet<T, S>;
 
     /// Returns the symmetric difference of `self` and `rhs` (right hand side) as a
-    /// new `MultiSet<K, S>`.
+    /// new `MultiSet<T, S>`.
     ///
     /// # Examples
     ///
@@ -976,15 +976,15 @@ impl<K: Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<K, S>> for
     ///
     /// assert_eq!(i, expected.iter().sum());
     /// ```
-    fn bitxor(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
+    fn bitxor(self, rhs: &MultiSet<T, S>) -> MultiSet<T, S> {
         self.symmetric_difference(rhs).cloned().collect()
     }
 }
 
-impl<K: Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<K, S>> for &MultiSet<K, S> {
-    type Output = MultiSet<K, S>;
+impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<T, S>> for &MultiSet<T, S> {
+    type Output = MultiSet<T, S>;
 
-    /// Returns the difference of `self` and `rhs` (right hand side) as a new `MultiSet<K, S>`.
+    /// Returns the difference of `self` and `rhs` (right hand side) as a new `MultiSet<T, S>`.
     ///
     /// # Examples
     ///
@@ -1005,13 +1005,13 @@ impl<K: Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<K, S>> for &M
     ///
     /// assert_eq!(i, expected.iter().sum());
     /// ```
-    fn sub(self, rhs: &MultiSet<K, S>) -> MultiSet<K, S> {
+    fn sub(self, rhs: &MultiSet<T, S>) -> MultiSet<T, S> {
         self.difference(rhs).cloned().collect()
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<K, S> {
-    fn eq(&self, other: &MultiSet<K, S>) -> bool {
+impl<T: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<T, S> {
+    fn eq(&self, other: &MultiSet<T, S>) -> bool {
         if self.len() != other.len() {
             return false;
         }
@@ -1021,22 +1021,22 @@ impl<K: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<K, S> {
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> Eq for MultiSet<K, S> {}
+impl<T: Eq + Hash, S: BuildHasher> Eq for MultiSet<T, S> {}
 
-impl<K: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<K, S> {
+impl<T: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<T, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_set().entries(self.iter()).finish()
     }
 }
 
-impl<K, S> FromIterator<K> for MultiSet<K, S>
+impl<T, S> FromIterator<T> for MultiSet<T, S>
 where
-    K: Hash + Eq,
+    T: Hash + Eq,
     S: BuildHasher + Default,
 {
-    fn from_iter<I: IntoIterator<Item = K>>(iter: I) -> MultiSet<K, S> {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> MultiSet<T, S> {
         let iter = iter.into_iter();
-        let mut mset: MultiSet<K, S> = MultiSet::with_hasher(Default::default());
+        let mut mset: MultiSet<T, S> = MultiSet::with_hasher(Default::default());
         for key in iter {
             mset.insert(key);
         }
@@ -1044,84 +1044,84 @@ where
     }
 }
 
-impl<K, S> FromIterator<(K, usize)> for MultiSet<K, S>
+impl<T, S> FromIterator<(T, usize)> for MultiSet<T, S>
 where
-    K: Hash + Eq,
+    T: Hash + Eq,
     S: BuildHasher + Default,
 {
-    fn from_iter<I: IntoIterator<Item = (K, usize)>>(iter: I) -> MultiSet<K, S> {
+    fn from_iter<I: IntoIterator<Item = (T, usize)>>(iter: I) -> MultiSet<T, S> {
         let mut mset = MultiSet::with_hasher(Default::default());
         mset.extend(iter);
         mset
     }
 }
 
-impl<K, S> IntoIterator for MultiSet<K, S>
+impl<T, S> IntoIterator for MultiSet<T, S>
 where
-    K: Hash + Eq + Clone,
+    T: Hash + Eq + Clone,
     S: BuildHasher + Default,
 {
-    type Item = (K, usize);
-    type IntoIter = IntoIter<K>;
+    type Item = (T, usize);
+    type IntoIter = IntoIter<T>;
 
-    fn into_iter(self) -> IntoIter<K> {
+    fn into_iter(self) -> IntoIter<T> {
         IntoIter {
             iter: self.elem_counts.into_iter(),
         }
     }
 }
 
-impl<'a, K, S> IntoIterator for &'a MultiSet<K, S>
+impl<'a, T, S> IntoIterator for &'a MultiSet<T, S>
 where
-    K: Hash + Eq,
+    T: Hash + Eq,
     S: BuildHasher,
 {
-    type Item = (&'a K, &'a usize);
-    type IntoIter = Iter<'a, K>;
+    type Item = (&'a T, &'a usize);
+    type IntoIter = Iter<'a, T>;
 
     fn into_iter(self) -> <Self as IntoIterator>::IntoIter {
         self.iter()
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> Extend<(K, usize)> for MultiSet<K, S> {
-    fn extend<I: IntoIterator<Item = (K, usize)>>(&mut self, iter: I) {
+impl<T: Eq + Hash, S: BuildHasher> Extend<(T, usize)> for MultiSet<T, S> {
+    fn extend<I: IntoIterator<Item = (T, usize)>>(&mut self, iter: I) {
         for (key, value) in iter.into_iter() {
             self.insert_times(key, value);
         }
     }
 }
 
-impl<'a, K, S> Extend<(&'a K, &'a usize)> for MultiSet<K, S>
+impl<'a, T, S> Extend<(&'a T, &'a usize)> for MultiSet<T, S>
 where
-    K: Eq + Hash + Copy,
+    T: Eq + Hash + Copy,
     S: BuildHasher,
 {
-    fn extend<I: IntoIterator<Item = (&'a K, &'a usize)>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item = (&'a T, &'a usize)>>(&mut self, iter: I) {
         for (key, value) in iter.into_iter().map(|(k, v)| ((*k).clone(), (*v).clone())) {
             self.insert_times(key, value);
         }
     }
 }
 
-impl<K, S> Extend<K> for MultiSet<K, S>
+impl<T, S> Extend<T> for MultiSet<T, S>
 where
-    K: Eq + Hash + Clone,
+    T: Eq + Hash + Clone,
     S: BuildHasher + Default,
 {
-    fn extend<I: IntoIterator<Item = K>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for key in iter.into_iter() {
             self.insert(key);
         }
     }
 }
 
-impl<'a, K, S> Extend<&'a K> for MultiSet<K, S>
+impl<'a, T, S> Extend<&'a T> for MultiSet<T, S>
 where
-    K: Eq + Hash + Clone,
+    T: Eq + Hash + Clone,
     S: BuildHasher + Default,
 {
-    fn extend<I: IntoIterator<Item = &'a K>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         for key in iter.into_iter().map(|k| (*k).clone()) {
             self.insert(key.clone());
         }
@@ -1135,11 +1135,11 @@ where
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`iter`]: struct.MultiSet.html#method.iter
-pub struct Iter<'a, K: 'a> {
-    iter: ::std::collections::hash_map::Iter<'a, K, usize>,
+pub struct Iter<'a, T: 'a> {
+    iter: ::std::collections::hash_map::Iter<'a, T, usize>,
 }
 
-impl<K> Clone for Iter<'_, K> {
+impl<T> Clone for Iter<'_, T> {
     fn clone(&self) -> Self {
         Iter {
             iter: self.iter.clone(),
@@ -1147,10 +1147,10 @@ impl<K> Clone for Iter<'_, K> {
     }
 }
 
-impl<'a, K> Iterator for Iter<'a, K> {
-    type Item = (&'a K, &'a usize);
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = (&'a T, &'a usize);
 
-    fn next(&mut self) -> Option<(&'a K, &'a usize)> {
+    fn next(&mut self) -> Option<(&'a T, &'a usize)> {
         self.iter.next()
     }
 
@@ -1159,15 +1159,15 @@ impl<'a, K> Iterator for Iter<'a, K> {
     }
 }
 
-impl<K> ExactSizeIterator for Iter<'_, K> {
+impl<T> ExactSizeIterator for Iter<'_, T> {
     fn len(&self) -> usize {
         self.iter.len()
     }
 }
 
-impl<K> FusedIterator for Iter<'_, K> {}
+impl<T> FusedIterator for Iter<'_, T> {}
 
-impl<K: fmt::Debug> fmt::Debug for Iter<'_, K> {
+impl<T: fmt::Debug> fmt::Debug for Iter<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
     }
@@ -1180,14 +1180,14 @@ impl<K: fmt::Debug> fmt::Debug for Iter<'_, K> {
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`iter`]: struct.MultiSet.html#method.iter
-pub struct IntoIter<K> {
-    iter: ::std::collections::hash_map::IntoIter<K, usize>,
+pub struct IntoIter<T> {
+    iter: ::std::collections::hash_map::IntoIter<T, usize>,
 }
 
-impl<K> Iterator for IntoIter<K> {
-    type Item = (K, usize);
+impl<T> Iterator for IntoIter<T> {
+    type Item = (T, usize);
 
-    fn next(&mut self) -> Option<(K, usize)> {
+    fn next(&mut self) -> Option<(T, usize)> {
         self.iter.next()
     }
 
@@ -1196,22 +1196,22 @@ impl<K> Iterator for IntoIter<K> {
     }
 }
 
-impl<K> ExactSizeIterator for IntoIter<K> {
+impl<T> ExactSizeIterator for IntoIter<T> {
     fn len(&self) -> usize {
         self.iter.len()
     }
 }
 
-impl<K> FusedIterator for IntoIter<K> {}
+impl<T> FusedIterator for IntoIter<T> {}
 
-pub struct Drain<'a, K: 'a> {
-    iter: MapDrain<'a, K, usize>,
+pub struct Drain<'a, T: 'a> {
+    iter: MapDrain<'a, T, usize>,
 }
 
-impl<'a, K> Iterator for Drain<'a, K> {
-    type Item = (K, usize);
+impl<'a, T> Iterator for Drain<'a, T> {
+    type Item = (T, usize);
 
-    fn next(&mut self) -> Option<(K, usize)> {
+    fn next(&mut self) -> Option<(T, usize)> {
         self.iter.next()
     }
 
@@ -1227,14 +1227,14 @@ impl<'a, K> Iterator for Drain<'a, K> {
 ///
 /// ['MultiSet`]: struct.MultiSet.html
 /// [intersection`]: struct.MultiSet.html#method.intersection
-pub struct Intersection<'a, K: 'a, S: 'a> {
+pub struct Intersection<'a, T: 'a, S: 'a> {
     // iterator of the first set
-    iter: Iter<'a, K>,
+    iter: Iter<'a, T>,
     // the second set
-    other: &'a MultiSet<K, S>,
+    other: &'a MultiSet<T, S>,
 }
 
-impl<K, S> Clone for Intersection<'_, K, S> {
+impl<T, S> Clone for Intersection<'_, T, S> {
     fn clone(&self) -> Self {
         Intersection {
             iter: self.iter.clone(),
@@ -1243,10 +1243,10 @@ impl<K, S> Clone for Intersection<'_, K, S> {
     }
 }
 
-impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Intersection<'a, K, S> {
-    type Item = &'a K;
+impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Intersection<'a, T, S> {
+    type Item = &'a T;
 
-    fn next(&mut self) -> Option<&'a K> {
+    fn next(&mut self) -> Option<&'a T> {
         loop {
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
@@ -1266,7 +1266,7 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Intersection<'a, K, S> {
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> FusedIterator for Intersection<'_, K, S> {}
+impl<T: Eq + Hash, S: BuildHasher> FusedIterator for Intersection<'_, T, S> {}
 
 /// A lazy iterator producing elements in the difference of `MultiSet`s.
 ///
@@ -1275,14 +1275,14 @@ impl<K: Eq + Hash, S: BuildHasher> FusedIterator for Intersection<'_, K, S> {}
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`difference`]: struct.MultiSet.html#method.difference
-pub struct Difference<'a, K, S> {
+pub struct Difference<'a, T, S> {
     // iterator of the first set
-    iter: Iter<'a, K>,
+    iter: Iter<'a, T>,
     // the second set
-    other: &'a MultiSet<K, S>,
+    other: &'a MultiSet<T, S>,
 }
 
-impl<K, S> Clone for Difference<'_, K, S> {
+impl<T, S> Clone for Difference<'_, T, S> {
     fn clone(&self) -> Self {
         Difference {
             iter: self.iter.clone(),
@@ -1291,10 +1291,10 @@ impl<K, S> Clone for Difference<'_, K, S> {
     }
 }
 
-impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, K, S> {
-    type Item = &'a K;
+impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
+    type Item = &'a T;
 
-    fn next(&mut self) -> Option<&'a K> {
+    fn next(&mut self) -> Option<&'a T> {
         loop {
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
@@ -1318,9 +1318,9 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, K, S> {
     }
 }
 
-impl<K: Eq + Hash, S: BuildHasher> FusedIterator for Difference<'_, K, S> {}
+impl<T: Eq + Hash, S: BuildHasher> FusedIterator for Difference<'_, T, S> {}
 
-impl<K: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, K, S> {
+impl<T: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, T, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
     }
@@ -1333,11 +1333,11 @@ impl<K: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, K,
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`symmetric_difference`]: struct.MultiSet.html#method.symmetric_difference
-pub struct SymmetricDifference<'a, K: 'a, S: 'a> {
-    iter: Chain<Difference<'a, K, S>, Difference<'a, K, S>>,
+pub struct SymmetricDifference<'a, T: 'a, S: 'a> {
+    iter: Chain<Difference<'a, T, S>, Difference<'a, T, S>>,
 }
 
-impl<K, S> Clone for SymmetricDifference<'_, K, S> {
+impl<T, S> Clone for SymmetricDifference<'_, T, S> {
     fn clone(&self) -> Self {
         SymmetricDifference {
             iter: self.iter.clone(),
@@ -1345,10 +1345,10 @@ impl<K, S> Clone for SymmetricDifference<'_, K, S> {
     }
 }
 
-impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for SymmetricDifference<'a, K, S> {
-    type Item = &'a K;
+impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for SymmetricDifference<'a, T, S> {
+    type Item = &'a T;
 
-    fn next(&mut self) -> Option<&'a K> {
+    fn next(&mut self) -> Option<&'a T> {
         self.iter.next()
     }
 
@@ -1364,11 +1364,11 @@ impl<'a, K: Eq + Hash, S: BuildHasher> Iterator for SymmetricDifference<'a, K, S
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`union`]: struct.MultiSet.html#method.union
-pub struct Union<'a, K: 'a> {
-    iter: Chain<Iter<'a, K>, Iter<'a, K>>,
+pub struct Union<'a, T: 'a> {
+    iter: Chain<Iter<'a, T>, Iter<'a, T>>,
 }
 
-impl<K> Clone for Union<'_, K> {
+impl<T> Clone for Union<'_, T> {
     fn clone(&self) -> Self {
         Union {
             iter: self.iter.clone(),
@@ -1376,18 +1376,18 @@ impl<K> Clone for Union<'_, K> {
     }
 }
 
-impl<K: fmt::Debug + Eq + Hash> fmt::Debug for Union<'_, K> {
+impl<T: fmt::Debug + Eq + Hash> fmt::Debug for Union<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
     }
 }
 
-impl<K: Eq + Hash> FusedIterator for Union<'_, K> {}
+impl<T: Eq + Hash> FusedIterator for Union<'_, T> {}
 
-impl<'a, K: Eq + Hash> Iterator for Union<'a, K> {
-    type Item = &'a K;
+impl<'a, T: Eq + Hash> Iterator for Union<'a, T> {
+    type Item = &'a T;
 
-    fn next(&mut self) -> Option<&'a K> {
+    fn next(&mut self) -> Option<&'a T> {
         loop {
             let (elem, count) = self.iter.next()?;
             let result = count.clone();
