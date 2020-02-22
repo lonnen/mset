@@ -31,7 +31,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 /// # Examples
 ///
-/// ```text
+/// ```
 /// use mset::MultiSet;
 ///
 /// // Ocassionally, type inference will let us omit an explicit type signature
@@ -54,7 +54,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// }
 ///
 /// // Remove a word
-/// bag.remove("23");
+/// bag.remove(&"23".to_string());
 ///
 /// // Iterate over everything.
 /// for (word, count) in &bag {
@@ -66,7 +66,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// [`Hash`]. We must also derive [`PartialEq`], this will in the future be
 /// implied by [`Eq`].
 ///
-/// ```text
+/// ```
 /// use mset::MultiSet;
 /// #[derive(Hash, Eq, PartialEq, Debug)]
 /// struct GuineaPig {
@@ -90,8 +90,8 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 /// A `MultiSet` with fixed list of elements can be initialized from an array:
 ///
-/// ```text
-/// use mset:MultiSet;
+/// ```
+/// use mset::MultiSet;
 ///
 /// let gps: MultiSet<&'static str> =
 ///     ["Deathmlom", "Bun Roy", "Funbees", "Sporky", "Bun Roy"].iter().cloned().collect();
