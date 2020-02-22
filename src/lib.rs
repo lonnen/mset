@@ -272,9 +272,9 @@ impl<T, S> MultiSet<T, S> {
     ///     mset.insert(*u);
     /// }
     ///
-    /// for (k, v) in mset.drain() {
-    ///     assert!(k == 1 || k == 2 || k == 3);
-    ///     assert_eq!(v, 2);
+    /// for (e, m) in mset.drain() {
+    ///     assert!(e == 1 || e == 2 || e == 3);
+    ///     assert_eq!(m, 2);
     /// }
     /// ```
     pub fn drain(&mut self) -> Drain<'_, T> {
@@ -650,7 +650,8 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
 
     /// Retains only the elements specified by the predicate.
     ///
-    /// In other words, remove all pairs `(k, v)` such that `f(&k, &mut v)` returns `false`.
+    /// In other words, remove all pairs `(elem, multiplicty)` such that `f(&k, &mut v)`
+    /// returns `false`.
     ///
     /// # Examples
     ///
@@ -658,14 +659,14 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// use mset::MultiSet;
     ///
     /// let mut mset: MultiSet<char> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
-    /// mset.retain(|_, v: &usize| v % 2 == 0);
+    /// mset.retain(|_, m: &usize| m % 2 == 0);
     /// assert_eq!(mset.len(), 2);
     /// ```
     pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(&T, &usize) -> bool,
     {
-        self.elem_counts.retain(|k, v| f(k, v));
+        self.elem_counts.retain(|e, m| f(e, m));
     }
 
     /// Visits the values representing the difference,
@@ -1463,9 +1464,9 @@ mod test_mset {
         let mut observed: usize = 0;
         let mut observed_len: usize = 0;
 
-        for (_k, v) in &mset {
+        for (_e, m) in &mset {
             observed_len += 1;
-            observed += v;
+            observed += m;
         }
 
         assert_eq!(mset.len(), observed_len);
@@ -1481,9 +1482,9 @@ mod test_mset {
 
         loop {
             match i.next() {
-                Some((k, v)) => {
-                    observed |= 1 << *k;
-                    assert_eq!(*v, 1);
+                Some((e, m)) => {
+                    observed |= 1 << *e;
+                    assert_eq!(*m, 1);
                 }
                 None => break,
             }
@@ -1503,9 +1504,9 @@ mod test_mset {
 
         loop {
             match i.next() {
-                Some((k, v)) => {
-                    observed |= 1 << *k;
-                    assert_eq!(*v, 1);
+                Some((e, m)) => {
+                    observed |= 1 << *e;
+                    assert_eq!(*m, 1);
                 }
                 None => break,
             }
