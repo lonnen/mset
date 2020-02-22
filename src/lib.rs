@@ -24,7 +24,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 ///
 /// It is a logic error for an item to be modified in such a way that the
-/// item's hash, as determined by the [`Hash`] trait, or its equalit, as
+/// item's hash, as determined by the [`Hash`] trait, or its equality, as
 /// determined by the [`Eq`] trait, changes while it is in the set. This is
 /// normally only possible through [`Cell`], [`RefCell`], global state, I/O, or
 /// unsafe code.
@@ -35,7 +35,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// use mset::MultiSet;
 ///
 /// // Ocassionally, type inference will let us omit an explicit type signature
-/// // (which would otherwise be `MultiSet<String>` in this example).
+/// // (which would be `MultiSet<String>` in this example).
 /// let mut bag = MultiSet::new();
 ///
 /// // Add some words
@@ -1179,7 +1179,7 @@ impl<T: fmt::Debug> fmt::Debug for Iter<'_, T> {
 /// `IntoIterator` trait). See its documentation for more.
 ///
 /// [`MultiSet`]: struct.MultiSet.html
-/// [`iter`]: struct.MultiSet.html#method.iter
+/// [`into_iter`]: struct.MultiSet.html#method.into_iter
 pub struct IntoIter<T> {
     iter: ::std::collections::hash_map::IntoIter<T, usize>,
 }
@@ -1220,7 +1220,7 @@ impl<'a, T> Iterator for Drain<'a, T> {
     }
 }
 
-/// A lazy iterator producing elements in the intersection of `MultiSets`s.
+/// A lazy iterator producing elements in the intersection of `MultiSet`s.
 ///
 /// This `struct` is created by the [`intersection`] method on [`MultiSet`].
 /// See its documentation for more.
@@ -1357,7 +1357,7 @@ impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for SymmetricDifference<'a, T, S
     }
 }
 
-/// A lazy iterator producing elements in the union of `MultiSets`s.
+/// A lazy iterator producing elements in the union of `MultiSet`s.
 ///
 /// This `struct` is created by the [`union`] method on [`MultiSet`].
 /// See its documentation for more.
