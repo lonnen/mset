@@ -1720,6 +1720,7 @@ mod test_mset {
     #[test]
     fn test_drain_trivial() {
         let mut mset = MultiSet::<char>::new();
+        mset.insert('a');
         for _ in mset.drain() {}
         assert!(mset.is_empty());
 
