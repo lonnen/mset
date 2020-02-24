@@ -50,7 +50,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// // Check for a specific one.
 /// if !bag.contains("Hacedor") {
 ///     println!("We have {} words, but Hacedor ain't one.",
-///              bag.len());
+///              bag.elements().len());
 /// }
 ///
 /// // Remove a word
@@ -122,6 +122,7 @@ impl<T: Hash + Eq> MultiSet<T, RandomState> {
     ///
     /// let mset: MultiSet<char> = MultiSet::new();
     /// assert_eq!(mset.len(), 0);
+    /// assert_eq!(mset.elements().len(), 0);
     /// ```
     pub fn new() -> MultiSet<T, RandomState> {
         MultiSet {
@@ -228,7 +229,7 @@ impl<T, S> MultiSet<T, S> {
         self.elem_counts.keys()
     }
 
-    /// Returns the number of elements int he map.
+    /// Returns the total number of elements in the multiset.
     ///
     /// # Examples
     ///
@@ -238,10 +239,12 @@ impl<T, S> MultiSet<T, S> {
     /// let mut mset: MultiSet<char> = MultiSet::new();
     /// assert_eq!(mset.len(), 0);
     /// mset.insert_times('a', 10);
-    /// assert_eq!(mset.len(), 1);
+    /// mset.insert('b');
+    /// mset.insert('b');
+    /// assert_eq!(mset.len(), 12);
     /// ```
     pub fn len(&self) -> usize {
-        self.elem_counts.len()
+        self.elem_counts.values().fold(0, |acc, multiplicity| acc + multiplicity)
     }
 
     /// Returns `true` if the set contains no elements.
@@ -417,7 +420,8 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// m.insert('z', 1);
     ///
     /// let mset: MultiSet<char> = MultiSet::from_hashmap(m);
-    /// assert_eq!(mset.len(), 2);
+    /// assert_eq!(mset.elements().len(), 2);
+    /// assert_eq!(mset.len(), 5);
     /// ```
     pub fn from_hashmap(rhs: HashMap<T, usize, S>) -> Self {
         Self { elem_counts: rhs }
@@ -513,7 +517,8 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert!(mset.insert('a'));
     /// assert!(!mset.insert('a'));
-    /// assert_eq!(mset.len(), 1);
+    /// assert_eq!(mset.len(), 2);
+    /// assert_eq!(mset.elements().len(), 1);
     /// ```
     pub fn insert(&mut self, value: T) -> bool {
         self.insert_times(value, 1)
@@ -534,7 +539,8 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert!(mset.insert_times('a', 10));
     /// assert!(!mset.insert_times('a', 2));
-    /// assert_eq!(mset.len(), 1);
+    /// assert_eq!(mset.elements().len(), 1);
+    /// assert_eq!(mset.len(), 12);
     /// assert_eq!(mset.get(&'a'), Some(&12));
     /// ```
     pub fn insert_times(&mut self, value: T, n: usize) -> bool {
@@ -660,7 +666,8 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     ///
     /// let mut mset: MultiSet<char> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
     /// mset.retain(|_, m: &usize| m % 2 == 0);
-    /// assert_eq!(mset.len(), 2);
+    /// assert_eq!(mset.elements().len(), 2);
+    /// assert_eq!(mset.len(), 4);
     /// ```
     pub fn retain<F>(&mut self, mut f: F)
     where
@@ -1469,7 +1476,7 @@ mod test_mset {
             observed += m;
         }
 
-        assert_eq!(mset.len(), observed_len);
+        assert_eq!(mset.elements().len(), observed_len);
         assert_eq!(observed, 16);
 
         let mut mset = MultiSet::new();
@@ -1763,7 +1770,8 @@ mod test_mset {
 
         a.extend(&[1, 2, 3, 4]);
 
-        assert_eq!(a.len(), 4);
+        assert_eq!(a.elements().len(), 4);
+        assert_eq!(a.len(), 5);
         assert!(a.contains(&1));
         assert!(a.contains(&2));
         assert!(a.contains(&3));
@@ -1773,14 +1781,13 @@ mod test_mset {
         assert_eq!(a.get(&2), Some(&1));
         assert_eq!(a.get(&5), None);
 
-        let mut b = MultiSet::new();
-        b.insert(1);
-        b.insert(2);
-        b.insert(5);
+        let b: MultiSet<_> = [1, 2, 5].iter().cloned().collect();
 
         a.extend(&b);
 
-        assert_eq!(a.len(), 5);
+        assert_eq!(a.elements().len(), 5);
+        assert_eq!(a.len(), 8);
+
         assert!(a.contains(&1));
         assert!(a.contains(&2));
         assert!(a.contains(&3));
@@ -1795,7 +1802,10 @@ mod test_mset {
     fn test_retain() {
         let mut mset: MultiSet<i32> = [1, 2, 3, 4, 5, 4, 3, 2, 1].iter().cloned().collect();
         mset.retain(|&k, _v| k < 3);
-        assert_eq!(mset.len(), 2);
+
+        assert_eq!(mset.elements().len(), 2);
+        assert_eq!(mset.len(), 4);
+
         assert_eq!(mset.get(&1), Some(&2usize));
         assert_eq!(mset.get(&2), Some(&2usize));
     }
