@@ -9,7 +9,7 @@ use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
 use std::ops::{BitAnd, BitOr, BitXor, Sub};
 
-/// A hash multi set implemented as a `HashMap` where the value is `usize`.
+/// A hash multiset implemented as a `HashMap` where the value is `usize`.
 ///
 /// As with the [`HashMap`] type, a `MultiSet` requires that the elements
 /// implement the [`Eq`] and [`Hash`] traits. This can frequently be achieved by
@@ -25,7 +25,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 /// It is a logic error for an item to be modified in such a way that the
 /// item's hash, as determined by the [`Hash`] trait, or its equality, as
-/// determined by the [`Eq`] trait, changes while it is in the set. This is
+/// determined by the [`Eq`] trait, changes while it is in the multiset. This is
 /// normally only possible through [`Cell`], [`RefCell`], global state, I/O, or
 /// unsafe code.
 ///
@@ -95,7 +95,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 /// let gps: MultiSet<&'static str> =
 ///     ["Deathmlom", "Bun Roy", "Funbees", "Sporky", "Bun Roy"].iter().cloned().collect();
-/// // use the values stored in the set
+/// // use the values stored in the multiset
 /// ```
 ///
 /// [`Cell`]: struct.Cell.html
@@ -112,7 +112,7 @@ pub struct MultiSet<T, S = RandomState> {
 impl<T: Hash + Eq> MultiSet<T, RandomState> {
     /// Create an empty `MultiSet`.
     ///
-    /// The multi set is initially created with a capacity of 0, so it will not allocate until it
+    /// The multiset is initially created with a capacity of 0, so it will not allocate until it
     /// is first inserted into.
     ///
     /// # Examples
@@ -132,8 +132,8 @@ impl<T: Hash + Eq> MultiSet<T, RandomState> {
 
     /// Create an empty `MultiSet` with the specified capacity.
     ///
-    /// The multi set will be able to hold at least `capacity` elements without
-    /// reallocating. If `capacity` is 0, the multi set will not allocate.
+    /// The multiset will be able to hold at least `capacity` elements without
+    /// reallocating. If `capacity` is 0, the multiset will not allocate.
     ///
     /// # Examples
     ///
@@ -150,7 +150,7 @@ impl<T: Hash + Eq> MultiSet<T, RandomState> {
 }
 
 impl<T, S> MultiSet<T, S> {
-    /// Returns the number of elements the multi set can hold without reallocating.
+    /// Returns the number of elements the multiset can hold without reallocating.
     ///
     /// # Examples
     ///
@@ -247,7 +247,7 @@ impl<T, S> MultiSet<T, S> {
         self.elem_counts.values().fold(0, |acc, multiplicity| acc + multiplicity)
     }
 
-    /// Returns `true` if the set contains no elements.
+    /// Returns `true` if the multiset contains no elements.
     ///
     /// # Examples
     ///
@@ -263,7 +263,7 @@ impl<T, S> MultiSet<T, S> {
         self.elem_counts.is_empty()
     }
 
-    /// Clears the set, returning all elements in an iterator.
+    /// Clears the multiset, returning all elements in an iterator.
     ///
     /// # Examples
     ///
@@ -286,7 +286,7 @@ impl<T, S> MultiSet<T, S> {
         }
     }
 
-    /// Clears the multi set, removing all values.
+    /// Clears the multiset, removing all values.
     ///
     /// # Examples
     ///
@@ -387,7 +387,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.reserve(additional)
     }
 
-    /// Shrinks the capacity of the multi set as much as possible. It will
+    /// Shrinks the capacity of the multiset as much as possible. It will
     /// drop down while maintaining the internal rules and possibly leaving
     /// some space in accordance with the resize policy.
     ///
@@ -502,11 +502,11 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         other.is_subset(self)
     }
 
-    /// Add a value to the multi set.
+    /// Add a value to the multiset.
     ///
-    /// If the set did not have this value present, `true` is returned.
+    /// If the multiset did not have this value present, `true` is returned.
     ///
-    /// If the set did have this value present, `false` is returned.
+    /// If the multiset did have this value present, `false` is returned.
     ///
     /// # Examples
     ///
@@ -524,11 +524,11 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         self.insert_times(value, 1)
     }
 
-    /// Add a value to the multi set some number of times
+    /// Add a value to the multiset some number of times
     ///
-    /// If the set did not have this value present, `true` is returned.
+    /// If the multiset did not have this value present, `true` is returned.
     ///
-    /// If the set did have this value present, `false` is returned.
+    /// If the multiset did have this value present, `false` is returned.
     ///
     /// # Examples
     ///
@@ -556,10 +556,10 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         }
     }
 
-    /// Remove a value from the multi set. Returns whether the value was
-    /// present in the set.
+    /// Remove a value from the multiset. Returns whether the value was
+    /// present in the multiset.
     ///
-    /// The value may be any borrowed form of the multi set's value type,
+    /// The value may be any borrowed form of the multiset's value type,
     /// but [`Hash`] and [`Eq`] on the borrowed form *must* match those for
     /// the value type.
     ///
@@ -585,10 +585,10 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         self.remove_times(value, 1)
     }
 
-    /// Remove multiple values from the multi set. Returns whether the values
-    /// were present in the set.
+    /// Remove multiple values from the multiset. Returns whether the values
+    /// were present in the multiset.
     ///
-    /// The values may be any borrowed form of the multi set's value type,
+    /// The values may be any borrowed form of the multiset's value type,
     /// but [`Hash`] and [`Eq`] on the borrowed form *must* match those for
     /// the value type.
     ///
@@ -631,10 +631,10 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         };
     }
 
-    /// Removes all instances of an element from the set and returns the
-    /// multiplicity, if the element is in the set.
+    /// Removes all instances of an element from the multiset and returns the
+    /// multiplicity, if the element is in the multiset.
     ///
-    /// The value may be any borrowd form of the set's value type, but
+    /// The value may be any borrowed form of the multiset's value type, but
     /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for
     /// the value type.
     ///
@@ -783,7 +783,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         }
     }
 
-    /// Returns `true` if the set contains a value.
+    /// Returns `true` if the multiset contains a value.
     ///
     /// The value may be any borrowed form of the multiset's value type, but
     /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for the
@@ -814,7 +814,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
 
     /// Returns a reference to the value corresponding to the key.
     ///
-    /// The key may be any borrowed form of the multi set's key type,
+    /// The key may be any borrowed form of the multiset's key type,
     /// but `Hash` and `Eq` on the borrowed form *must* match those
     /// for the key type.
     ///
@@ -1236,9 +1236,9 @@ impl<'a, T> Iterator for Drain<'a, T> {
 /// ['MultiSet`]: struct.MultiSet.html
 /// [intersection`]: struct.MultiSet.html#method.intersection
 pub struct Intersection<'a, T: 'a, S: 'a> {
-    // iterator of the first set
+    // iterator of the first mset
     iter: Iter<'a, T>,
-    // the second set
+    // the second mset
     other: &'a MultiSet<T, S>,
 }
 
@@ -1284,9 +1284,9 @@ impl<T: Eq + Hash, S: BuildHasher> FusedIterator for Intersection<'_, T, S> {}
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`difference`]: struct.MultiSet.html#method.difference
 pub struct Difference<'a, T, S> {
-    // iterator of the first set
+    // iterator of the first mset
     iter: Iter<'a, T>,
-    // the second set
+    // the second mset
     other: &'a MultiSet<T, S>,
 }
 
