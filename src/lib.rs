@@ -184,28 +184,6 @@ impl<T, S> MultiSet<T, S> {
     /// mset.insert("b");
     ///
     /// // Will print in an arbitrary order.
-    /// for (elem, count) in mset.iter() {
-    ///     println!("{}: {}", elem, count);
-    /// }
-    /// ```
-    pub fn iter(&self) -> Iter<T> {
-        Iter {
-            iter: self.elem_counts.iter(),
-        }
-    }
-
-    /// An iterator visitng all distinct elements and counts in arbitrary order.
-    /// The iterator element type is `&'a (T, usize)`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    /// let mut mset = MultiSet::new();
-    /// mset.insert("a");
-    /// mset.insert("b");
-    ///
-    /// // Will print in an arbitrary order.
     /// for (elem, count) in mset.element_counts() {
     ///     println!("{}: {}", elem, count);
     /// }
@@ -412,6 +390,28 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// ```
     pub fn from_hashmap(rhs: HashMap<T, usize, S>) -> Self {
         Self { elem_counts: rhs }
+    }
+
+    /// An iterator visitng all distinct elements and counts in arbitrary order.
+    /// The iterator element type is `&'a (T, usize)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let mut mset = MultiSet::new();
+    /// mset.insert("a");
+    /// mset.insert("b");
+    ///
+    /// // Will print in an arbitrary order.
+    /// for (elem, count) in mset.iter() {
+    ///     println!("{}: {}", elem, count);
+    /// }
+    /// ```
+    pub fn iter(&self) -> Iter<T> {
+        Iter {
+            iter: self.elem_counts.iter(),
+        }
     }
 
     /// Returns `true` if `self` has no elements in common with `other`.
@@ -1035,7 +1035,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher> PartialEq for MultiSet<T, S> {
 
 impl<T: Eq + Hash + Clone, S: BuildHasher> Eq for MultiSet<T, S> {}
 
-impl<T: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<T, S> {
+impl<T: Eq + Hash + fmt::Debug + Clone, S: BuildHasher> fmt::Debug for MultiSet<T, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_set().entries(self.iter()).finish()
     }
