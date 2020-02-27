@@ -112,8 +112,8 @@ pub struct MultiSet<T, S = RandomState> {
 impl<T: Hash + Eq> MultiSet<T, RandomState> {
     /// Create an empty `MultiSet`.
     ///
-    /// The multiset is initially created with a capacity of 0, so it will not allocate until it
-    /// is first inserted into.
+    /// The multiset is initially created with a capacity of 0 distinct elements, so it will not
+    /// allocate until it is first inserted into.
     ///
     /// # Examples
     ///
@@ -132,8 +132,8 @@ impl<T: Hash + Eq> MultiSet<T, RandomState> {
 
     /// Create an empty `MultiSet` with the specified capacity.
     ///
-    /// The multiset will be able to hold at least `capacity` elements without
-    /// reallocating. If `capacity` is 0, the multiset will not allocate.
+    /// The multiset will be able to hold at least `capacity` distinct elements without
+    /// reallocating. If `capacity` is 0, the multiset will not allocate on creation.
     ///
     /// # Examples
     ///
@@ -150,7 +150,7 @@ impl<T: Hash + Eq> MultiSet<T, RandomState> {
 }
 
 impl<T, S> MultiSet<T, S> {
-    /// Returns the number of elements the multiset can hold without reallocating.
+    /// Returns the number of distinct elements the multiset can hold without reallocating.
     ///
     /// # Examples
     ///
@@ -367,7 +367,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.hasher()
     }
 
-    /// Reserves capacity for at least `additional` more elements to be inserted
+    /// Reserves capacity for at least `additional` more distinct elements to be inserted
     /// in the `HashMap`. The collection may reserve more space to avoid
     /// frequent reallocations.
     ///
