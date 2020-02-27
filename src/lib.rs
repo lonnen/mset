@@ -17,17 +17,24 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// it is important that the following property holds:
 ///
 /// ```text
-/// k1 == k2 -> hash(k1) == hash(k2)
+/// e1 == e2 -> hash(e1) == hash(e2)
 /// ```
 ///
-/// In other words, if two keys are equal, their hashes must also be equal.
-///
+/// In other words, if two elements are equal, their hashes must also be equal.
 ///
 /// It is a logic error for an item to be modified in such a way that the
 /// item's hash, as determined by the [`Hash`] trait, or its equality, as
 /// determined by the [`Eq`] trait, changes while it is in the multiset. This is
 /// normally only possible through [`Cell`], [`RefCell`], global state, I/O, or
 /// unsafe code.
+///
+/// In addition to these constraints, elements must implement the [`Clone`] trait.
+/// As above, this can frequently be derived using `#[derive(Clone)]` or adding the `Clone`
+/// trait to the other traits in an existing `#derive[...]` macro. A multiset stores
+/// the first element inserted with and a `usize`. When an api call returns one or more
+/// elements it will return clones of that initial element. For complex elements this can
+/// sometimes lead to unexpected behavior, and in those cases it may be preferable to
+/// explore other hash functions or non-hash map backed multiset implementations.
 ///
 /// # Examples
 ///
@@ -48,7 +55,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// bag.insert("letters".to_string());
 ///
 /// // Check for a specific one.
-/// if !bag.contains("Hacedor") {
+/// if !bag.contains(&"Hacedor".to_string()) {
 ///     println!("We have {} words, but Hacedor ain't one.",
 ///              bag.elements().len());
 /// }
@@ -62,13 +69,13 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// }
 /// ```
 ///
-/// The easiest way to use `MultiSet` with a custom type is to derive [`Eq`] and
-/// [`Hash`]. We must also derive [`PartialEq`], this will in the future be
+/// The easiest way to use `MultiSet` with a custom type is to derive [`Eq`],
+/// [`Hash`], and [`Clone`]. We must also derive [`PartialEq`], this will in the future be
 /// implied by [`Eq`].
 ///
 /// ```
 /// use mset::MultiSet;
-/// #[derive(Hash, Eq, PartialEq, Debug)]
+/// #[derive(Hash, Eq, PartialEq, Debug, Clone)]
 /// struct GuineaPig {
 ///     name: String,
 ///     weight: usize,
@@ -101,6 +108,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// [`Cell`]: struct.Cell.html
 /// [`Eq`]: trait.Eq.html
 /// [`Hash`]: trait.Hash.html
+/// [`Clone`]: trait.Clone.html
 /// [`HashMap`]: struct.HashMap.html
 /// [`PartialEq`]: trait.PartialEq.html
 /// [`RefCell`]: struct.RefCell.html
@@ -109,7 +117,7 @@ pub struct MultiSet<T, S = RandomState> {
     elem_counts: HashMap<T, usize, S>,
 }
 
-impl<T: Hash + Eq> MultiSet<T, RandomState> {
+impl<T: Hash + Eq + Clone> MultiSet<T, RandomState> {
     /// Create an empty `MultiSet`.
     ///
     /// The multiset is initially created with a capacity of 0 distinct elements, so it will not
@@ -306,7 +314,7 @@ impl<T, S> MultiSet<T, S> {
     }
 }
 
-impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
+impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// Create an empty `MultiSet` using the specified hasher.
     ///
     /// The created MutliSet has the default initial capacity.
@@ -328,7 +336,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     }
 
     /// Create an empty `MultiSet` with the specified capacity, using `hash_builder`
-    /// to hash the keys.
+    /// to hash the elements.
     ///
     /// The created MutliSet will hold at least `capacity` elements without
     /// reallocating. If `capacity` is 0, the MultiSet will not allocate.
@@ -581,8 +589,6 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.capacity(), 0);
     /// ```
     pub fn remove(&mut self, value: &T) -> bool
-    where
-        T: Hash + Eq + Clone,
     {
         self.remove_times(value, 1)
     }
@@ -609,8 +615,6 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert!(mset.is_empty());
     /// ```
     pub fn remove_times(&mut self, value: &T, n: usize) -> bool
-    where
-        T: Hash + Eq + Clone,
     {
         match self.elem_counts.entry((*value).clone()) {
             Entry::Occupied(mut view) => {
@@ -809,16 +813,16 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + Clone,
     {
         self.elem_counts.contains_key(value)
     }
 
-    /// Returns a reference to the value corresponding to the key.
+    /// Returns a reference to the value corresponding to the element.
     ///
-    /// The key may be any borrowed form of the multiset's key type,
+    /// The element may be any borrowed form of the multiset's element type,
     /// but `Hash` and `Eq` on the borrowed form *must* match those
-    /// for the key type.
+    /// for the element type.
     ///
     ///
     /// # Examples
@@ -831,18 +835,18 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get(&'a'), Some(&1));
     /// assert_eq!(mset.get(&'b'), None);
     /// ```
-    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&usize>
+    pub fn get<Q: ?Sized>(&self, element: &Q) -> Option<&usize>
     where
         T: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + Clone,
     {
-        self.elem_counts.get(key)
+        self.elem_counts.get(element)
     }
 
-    /// Returns a mutable reference to the value corresponding to the key.
+    /// Returns a mutable reference to the value corresponding to the element.
     ///
-    /// The key may be any borrowed form of the map's key type, but [`Hash`]
-    /// and [`Eq`] on the borrowed form *must* match those for the key type.
+    /// The element may be any borrowed form of the map's element type, but [`Hash`]
+    /// and [`Eq`] on the borrowed form *must* match those for the element type.
     ///
     /// [`Eq`]: trait.Eq.html
     /// [`Hash`]: trait.Hash.html
@@ -861,15 +865,15 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get(&'a'), Some(&5));
     ///
     /// ```
-    pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut usize>
+    pub fn get_mut<Q: ?Sized>(&mut self, element: &Q) -> Option<&mut usize>
     where
         T: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + Clone,
     {
-        self.elem_counts.get_mut(key)
+        self.elem_counts.get_mut(element)
     }
 
-    /// Returns the element-multiplicity pair corresponding to the supplied key.
+    /// Returns the element-multiplicity pair corresponding to the supplied element.
     ///
     /// The supplied element may be any borrowed form of the mset's type,
     /// but `Hash` and `Eq` on the borrowed form *must* match those for
@@ -885,11 +889,11 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get_element_multiplicity(&'a'), Some((&'a', &1)));
     /// assert_eq!(mset.get_element_multiplicity(&'b'), None);
     /// ```
-    pub fn get_element_multiplicity(&self, key: &T) -> Option<(&T, &usize)>
+    pub fn get_element_multiplicity(&self, element: &T) -> Option<(&T, &usize)>
     where
         T: Borrow<T>,
     {
-        self.elem_counts.get_key_value(key)
+        self.elem_counts.get_key_value(element)
     }
 }
 
@@ -1020,7 +1024,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<T, S>> for &M
     }
 }
 
-impl<T: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<T, S> {
+impl<T: Eq + Hash + Clone, S: BuildHasher> PartialEq for MultiSet<T, S> {
     fn eq(&self, other: &MultiSet<T, S>) -> bool {
         if self.len() != other.len() {
             return false;
@@ -1031,7 +1035,7 @@ impl<T: Eq + Hash, S: BuildHasher> PartialEq for MultiSet<T, S> {
     }
 }
 
-impl<T: Eq + Hash, S: BuildHasher> Eq for MultiSet<T, S> {}
+impl<T: Eq + Hash + Clone, S: BuildHasher> Eq for MultiSet<T, S> {}
 
 impl<T: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<T, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1039,10 +1043,7 @@ impl<T: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<T, S> {
     }
 }
 
-impl<T, S> FromIterator<T> for MultiSet<T, S>
-where
-    T: Hash + Eq,
-    S: BuildHasher + Default,
+impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<T> for MultiSet<T, S>
 {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> MultiSet<T, S> {
         let iter = iter.into_iter();
@@ -1054,10 +1055,7 @@ where
     }
 }
 
-impl<T, S> FromIterator<(T, usize)> for MultiSet<T, S>
-where
-    T: Hash + Eq,
-    S: BuildHasher + Default,
+impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<(T, usize)> for MultiSet<T, S>
 {
     fn from_iter<I: IntoIterator<Item = (T, usize)>>(iter: I) -> MultiSet<T, S> {
         let mut mset = MultiSet::with_hasher(Default::default());
@@ -1066,10 +1064,7 @@ where
     }
 }
 
-impl<T, S> IntoIterator for MultiSet<T, S>
-where
-    T: Hash + Eq + Clone,
-    S: BuildHasher + Default,
+impl<T: Hash + Eq + Clone, S: BuildHasher + Default> IntoIterator for MultiSet<T, S>
 {
     type Item = (T, usize);
     type IntoIter = IntoIter<T>;
@@ -1081,10 +1076,7 @@ where
     }
 }
 
-impl<'a, T, S> IntoIterator for &'a MultiSet<T, S>
-where
-    T: Hash + Eq,
-    S: BuildHasher,
+impl<'a, T: Hash + Eq + Clone, S: BuildHasher> IntoIterator for &'a MultiSet<T, S>
 {
     type Item = (&'a T, &'a usize);
     type IntoIter = Iter<'a, T>;
@@ -1094,7 +1086,7 @@ where
     }
 }
 
-impl<T: Eq + Hash, S: BuildHasher> Extend<(T, usize)> for MultiSet<T, S> {
+impl<T: Eq + Hash + Clone, S: BuildHasher> Extend<(T, usize)> for MultiSet<T, S> {
     fn extend<I: IntoIterator<Item = (T, usize)>>(&mut self, iter: I) {
         for (key, value) in iter.into_iter() {
             self.insert_times(key, value);
@@ -1102,10 +1094,7 @@ impl<T: Eq + Hash, S: BuildHasher> Extend<(T, usize)> for MultiSet<T, S> {
     }
 }
 
-impl<'a, T, S> Extend<(&'a T, &'a usize)> for MultiSet<T, S>
-where
-    T: Eq + Hash + Copy,
-    S: BuildHasher,
+impl<'a, T: Eq + Hash + Clone, S: BuildHasher,> Extend<(&'a T, &'a usize)> for MultiSet<T, S>
 {
     fn extend<I: IntoIterator<Item = (&'a T, &'a usize)>>(&mut self, iter: I) {
         for (key, value) in iter.into_iter().map(|(k, v)| ((*k).clone(), (*v).clone())) {
@@ -1114,10 +1103,7 @@ where
     }
 }
 
-impl<T, S> Extend<T> for MultiSet<T, S>
-where
-    T: Eq + Hash + Clone,
-    S: BuildHasher + Default,
+impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<T> for MultiSet<T, S>
 {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for key in iter.into_iter() {
@@ -1126,10 +1112,7 @@ where
     }
 }
 
-impl<'a, T, S> Extend<&'a T> for MultiSet<T, S>
-where
-    T: Eq + Hash + Clone,
-    S: BuildHasher + Default,
+impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for MultiSet<T, S>
 {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         for key in iter.into_iter().map(|k| (*k).clone()) {
@@ -1253,7 +1236,7 @@ impl<T, S> Clone for Intersection<'_, T, S> {
     }
 }
 
-impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Intersection<'a, T, S> {
+impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, S> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
@@ -1276,7 +1259,7 @@ impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Intersection<'a, T, S> {
     }
 }
 
-impl<T: Eq + Hash, S: BuildHasher> FusedIterator for Intersection<'_, T, S> {}
+impl<T: Eq + Hash + Clone, S: BuildHasher> FusedIterator for Intersection<'_, T, S> {}
 
 /// A lazy iterator producing elements in the difference of `MultiSet`s.
 ///
@@ -1301,7 +1284,7 @@ impl<T, S> Clone for Difference<'_, T, S> {
     }
 }
 
-impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
+impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Difference<'a, T, S> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
@@ -1328,9 +1311,9 @@ impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
     }
 }
 
-impl<T: Eq + Hash, S: BuildHasher> FusedIterator for Difference<'_, T, S> {}
+impl<T: Eq + Hash + Clone, S: BuildHasher> FusedIterator for Difference<'_, T, S> {}
 
-impl<T: fmt::Debug + Eq + Hash, S: BuildHasher> fmt::Debug for Difference<'_, T, S> {
+impl<T: fmt::Debug + Eq + Hash + Clone, S: BuildHasher> fmt::Debug for Difference<'_, T, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
     }
@@ -1355,7 +1338,7 @@ impl<T, S> Clone for SymmetricDifference<'_, T, S> {
     }
 }
 
-impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for SymmetricDifference<'a, T, S> {
+impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for SymmetricDifference<'a, T, S> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
@@ -1386,15 +1369,15 @@ impl<T> Clone for Union<'_, T> {
     }
 }
 
-impl<T: fmt::Debug + Eq + Hash> fmt::Debug for Union<'_, T> {
+impl<T: fmt::Debug + Eq + Hash + Clone> fmt::Debug for Union<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
     }
 }
 
-impl<T: Eq + Hash> FusedIterator for Union<'_, T> {}
+impl<T: Eq + Hash + Clone> FusedIterator for Union<'_, T> {}
 
-impl<'a, T: Eq + Hash> Iterator for Union<'a, T> {
+impl<'a, T: Eq + Hash + Clone> Iterator for Union<'a, T> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
