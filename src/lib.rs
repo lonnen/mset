@@ -244,7 +244,9 @@ impl<T, S> MultiSet<T, S> {
     /// assert_eq!(mset.len(), 12);
     /// ```
     pub fn len(&self) -> usize {
-        self.elem_counts.values().fold(0, |acc, multiplicity| acc + multiplicity)
+        self.elem_counts
+            .values()
+            .fold(0, |acc, multiplicity| acc + multiplicity)
     }
 
     /// Returns `true` if the multiset contains no elements.
