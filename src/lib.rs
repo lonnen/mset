@@ -1499,7 +1499,7 @@ mod test_mset {
 
     #[test]
     fn test_retrieving_mset_values() {
-        let mut m1: MultiSet<char> = MultiSet::new();
+        let mut m1 = MultiSet::new();
         m1.insert_times('d', 9);
 
         assert_eq!(m1.get(&'d'), Some(&9));
@@ -1508,7 +1508,7 @@ mod test_mset {
 
     #[test]
     fn test_mset_clear() {
-        let mut mset: MultiSet<char> = MultiSet::new();
+        let mut mset = MultiSet::new();
 
         assert!(mset.is_empty());
 
