@@ -273,29 +273,6 @@ impl<T, S> MultiSet<T, S> {
         self.elem_counts.is_empty()
     }
 
-    /// Clears the multiset, returning all elements in an iterator.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset: MultiSet<i32> = MultiSet::new();
-    /// for u in &[1i32, 2i32, 3i32, 3i32, 2i32, 1i32] {
-    ///     mset.insert(*u);
-    /// }
-    ///
-    /// for (e, m) in mset.drain() {
-    ///     assert!(e == 1 || e == 2 || e == 3);
-    ///     assert_eq!(m, 2);
-    /// }
-    /// ```
-    pub fn drain(&mut self) -> Drain<'_, T> {
-        Drain {
-            iter: self.elem_counts.drain(),
-        }
-    }
-
     /// Clears the multiset, removing all values.
     ///
     /// # Examples
@@ -588,8 +565,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// mset.shrink_to_fit();
     /// assert_eq!(mset.capacity(), 0);
     /// ```
-    pub fn remove(&mut self, value: &T) -> bool
-    {
+    pub fn remove(&mut self, value: &T) -> bool {
         self.remove_times(value, 1)
     }
 
@@ -614,8 +590,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert!(mset.is_empty());
     /// ```
-    pub fn remove_times(&mut self, value: &T, n: usize) -> bool
-    {
+    pub fn remove_times(&mut self, value: &T, n: usize) -> bool {
         match self.elem_counts.entry((*value).clone()) {
             Entry::Occupied(mut view) => {
                 let curr_value = view.get().clone();
@@ -680,6 +655,29 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         F: FnMut(&T, &usize) -> bool,
     {
         self.elem_counts.retain(|e, m| f(e, m));
+    }
+
+    /// Clears the multiset, returning all elements in an iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    ///
+    /// let mut mset: MultiSet<i32> = MultiSet::new();
+    /// for u in &[1i32, 2i32, 3i32, 3i32, 2i32, 1i32] {
+    ///     mset.insert(*u);
+    /// }
+    ///
+    /// for (e, m) in mset.drain() {
+    ///     assert!(e == 1 || e == 2 || e == 3);
+    ///     assert_eq!(m, 2);
+    /// }
+    /// ```
+    pub fn drain(&mut self) -> Drain<'_, T> {
+        Drain {
+            iter: self.elem_counts.drain(),
+        }
     }
 
     /// Visits the values representing the difference,
@@ -1043,8 +1041,7 @@ impl<T: Eq + Hash + fmt::Debug, S: BuildHasher> fmt::Debug for MultiSet<T, S> {
     }
 }
 
-impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<T> for MultiSet<T, S>
-{
+impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<T> for MultiSet<T, S> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> MultiSet<T, S> {
         let iter = iter.into_iter();
         let mut mset: MultiSet<T, S> = MultiSet::with_hasher(Default::default());
@@ -1055,8 +1052,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<T> for MultiSe
     }
 }
 
-impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<(T, usize)> for MultiSet<T, S>
-{
+impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<(T, usize)> for MultiSet<T, S> {
     fn from_iter<I: IntoIterator<Item = (T, usize)>>(iter: I) -> MultiSet<T, S> {
         let mut mset = MultiSet::with_hasher(Default::default());
         mset.extend(iter);
@@ -1064,8 +1060,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher + Default> FromIterator<(T, usize)> fo
     }
 }
 
-impl<T: Hash + Eq + Clone, S: BuildHasher + Default> IntoIterator for MultiSet<T, S>
-{
+impl<T: Hash + Eq + Clone, S: BuildHasher + Default> IntoIterator for MultiSet<T, S> {
     type Item = (T, usize);
     type IntoIter = IntoIter<T>;
 
@@ -1076,8 +1071,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher + Default> IntoIterator for MultiSet<T
     }
 }
 
-impl<'a, T: Hash + Eq + Clone, S: BuildHasher> IntoIterator for &'a MultiSet<T, S>
-{
+impl<'a, T: Hash + Eq + Clone, S: BuildHasher> IntoIterator for &'a MultiSet<T, S> {
     type Item = (&'a T, &'a usize);
     type IntoIter = Iter<'a, T>;
 
@@ -1094,8 +1088,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher> Extend<(T, usize)> for MultiSet<T, S>
     }
 }
 
-impl<'a, T: Eq + Hash + Clone, S: BuildHasher,> Extend<(&'a T, &'a usize)> for MultiSet<T, S>
-{
+impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Extend<(&'a T, &'a usize)> for MultiSet<T, S> {
     fn extend<I: IntoIterator<Item = (&'a T, &'a usize)>>(&mut self, iter: I) {
         for (key, value) in iter.into_iter().map(|(k, v)| ((*k).clone(), (*v).clone())) {
             self.insert_times(key, value);
@@ -1103,8 +1096,7 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher,> Extend<(&'a T, &'a usize)> for M
     }
 }
 
-impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<T> for MultiSet<T, S>
-{
+impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<T> for MultiSet<T, S> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for key in iter.into_iter() {
             self.insert(key);
@@ -1112,8 +1104,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<T> for MultiSet<T, S
     }
 }
 
-impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for MultiSet<T, S>
-{
+impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for MultiSet<T, S> {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         for key in iter.into_iter().map(|k| (*k).clone()) {
             self.insert(key.clone());
