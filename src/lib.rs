@@ -1427,7 +1427,7 @@ mod test_mset {
 
     #[test]
     fn test_insert_and_retrieve_elements() {
-        let mut mset: MultiSet<char> = MultiSet::new();
+        let mut mset = MultiSet::new();
         mset.insert('a');
         assert_eq!(mset.get(&'a'), Some(&1));
         mset.insert('a');
@@ -1439,7 +1439,7 @@ mod test_mset {
 
     #[test]
     fn test_iterator_over_elements() {
-        let mut mset: MultiSet<char> = MultiSet::with_capacity(4);
+        let mut mset = MultiSet::with_capacity(4);
         mset.insert_times('a', 10);
         mset.insert_times('b', 5);
         mset.insert_times('c', 1);
