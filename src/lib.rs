@@ -1695,8 +1695,8 @@ mod test_mset {
     #[test]
     fn test_show_nontrivial() {
         let mset: MultiSet<usize> = [777, 7, 7, 7].iter().cloned().collect();
-
         let debug_str = format!("{:?}", mset);
+
         assert!((debug_str == "{(777, 1), (7, 3)}") || (debug_str == "{(7, 3), (777, 1)}"));
     }
 
