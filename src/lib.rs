@@ -828,7 +828,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let mut mset: MultiSet<char> = MultiSet::new();
+    /// let mut mset: MultiSet<_> = MultiSet::new();
     /// mset.insert('a');
     /// assert_eq!(mset.get(&'a'), Some(&1));
     /// assert_eq!(mset.get(&'b'), None);
