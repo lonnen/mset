@@ -1055,7 +1055,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher> Eq for MultiSet<T, S> {}
 
 impl<T: Eq + Hash + fmt::Debug + Clone, S: BuildHasher> fmt::Debug for MultiSet<T, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_set().entries(self.iter()).finish()
+        f.debug_set().entries(self.element_counts()).finish()
     }
 }
 
