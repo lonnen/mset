@@ -1206,6 +1206,7 @@ impl<T> ExactSizeIterator for IntoIter<T> {
 
 impl<T> FusedIterator for IntoIter<T> {}
 
+#[derive(Debug)]
 pub struct Drain<'a, T: 'a> {
     iter: MapDrain<'a, T, usize>,
 }
