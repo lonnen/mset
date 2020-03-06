@@ -1387,12 +1387,6 @@ impl<T> Clone for Union<'_, T> {
     }
 }
 
-impl<T: fmt::Debug + Eq + Hash + Clone> fmt::Debug for Union<'_, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_list().entries(self.clone()).finish()
-    }
-}
-
 impl<T: Eq + Hash + Clone> FusedIterator for Union<'_, T> {}
 
 impl<'a, T: Eq + Hash + Clone> Iterator for Union<'a, T> {
@@ -1410,6 +1404,12 @@ impl<'a, T: Eq + Hash + Clone> Iterator for Union<'a, T> {
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
+    }
+}
+
+impl<T: fmt::Debug + Eq + Hash + Clone> fmt::Debug for Union<'_, T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
     }
 }
 
