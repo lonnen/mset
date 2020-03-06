@@ -1362,6 +1362,12 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for SymmetricDifference<
     }
 }
 
+impl<T: fmt::Debug + Eq + Hash + Clone, S: BuildHasher> fmt::Debug for SymmetricDifference<'_, T, S> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
+    }
+}
+
 /// A lazy iterator producing elements in the union of `MultiSet`s.
 ///
 /// This `struct` is created by the [`union`] method on [`MultiSet`].
