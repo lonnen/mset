@@ -1130,6 +1130,46 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for Multi
     }
 }
 
+/// An iterator over the element counts of a `MultiSet`.
+///
+/// This `struct` is created by the [`iter`] method on [`MultiSet`].
+/// See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// [`iter`]: struct.MultiSet.html#method.iter
+#[derive(Debug)]
+pub struct IterElementCounts<'a, T: 'a> {
+    iter: ::std::collections::hash_map::Iter<'a, T, usize>,
+}
+
+impl<T> Clone for IterElementCounts<'_, T> {
+    fn clone(&self) -> Self {
+        IterElementCounts {
+            iter: self.iter.clone(),
+        }
+    }
+}
+
+impl<'a, T> Iterator for IterElementCounts<'a, T> {
+    type Item = (&'a T, &'a usize);
+
+    fn next(&mut self) -> Option<(&'a T, &'a usize)> {
+        self.iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
+}
+
+impl<T> ExactSizeIterator for IterElementCounts<'_, T> {
+    fn len(&self) -> usize {
+        self.iter.len()
+    }
+}
+
+impl<T> FusedIterator for IterElementCounts<'_, T> {}
+
 /// An iterator over the items of a `MultiSet`.
 ///
 /// This `struct` is created by the [`iter`] method on [`MultiSet`].
