@@ -1132,11 +1132,11 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for Multi
 
 /// An iterator over the element counts of a `MultiSet`.
 ///
-/// This `struct` is created by the [`iter`] method on [`MultiSet`].
+/// This `struct` is created by the [`element_counts`] method on [`MultiSet`].
 /// See its documentation for more.
 ///
 /// [`MultiSet`]: struct.MultiSet.html
-/// [`iter`]: struct.MultiSet.html#method.iter
+/// [`element_counts`]: struct.MultiSet.html#method.element_counts
 #[derive(Debug)]
 pub struct IterElementCounts<'a, T: 'a> {
     iter: ::std::collections::hash_map::Iter<'a, T, usize>,
