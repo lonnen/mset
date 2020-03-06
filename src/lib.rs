@@ -1,7 +1,9 @@
 use std::borrow::Borrow;
 use std::cmp::min;
 use std::collections::hash_map::RandomState;
-use std::collections::hash_map::{Drain as MapDrain, Entry, IntoIter as MapIntoIter, Iter as MapIter, Keys};
+use std::collections::hash_map::{
+    Drain as MapDrain, Entry, IntoIter as MapIntoIter, Iter as MapIter, Keys,
+};
 use std::collections::HashMap;
 use std::default::Default;
 use std::fmt;
@@ -192,7 +194,6 @@ impl<T, S> MultiSet<T, S> {
         IterElementCounts {
             iter: self.elem_counts.iter(),
         }
-
     }
 
     /// An iterator visiting all distinct elements in arbitrary order.
@@ -1405,7 +1406,9 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for SymmetricDifference<
     }
 }
 
-impl<T: fmt::Debug + Eq + Hash + Clone, S: BuildHasher> fmt::Debug for SymmetricDifference<'_, T, S> {
+impl<T: fmt::Debug + Eq + Hash + Clone, S: BuildHasher> fmt::Debug
+    for SymmetricDifference<'_, T, S>
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
     }
