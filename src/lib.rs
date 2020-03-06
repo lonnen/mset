@@ -1267,6 +1267,12 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
 impl<T: Eq + Hash + Clone, S: BuildHasher> FusedIterator for Intersection<'_, T, S> {}
 
+impl<T: fmt::Debug + Eq + Hash + Clone, S: BuildHasher> fmt::Debug for Intersection<'_, T, S> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(self.clone()).finish()
+    }
+}
+
 /// A lazy iterator producing elements in the difference of `MultiSet`s.
 ///
 /// This `struct` is created by the [`difference`] method on [`MultiSet`].
