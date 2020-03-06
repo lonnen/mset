@@ -188,8 +188,11 @@ impl<T, S> MultiSet<T, S> {
     ///     println!("{}: {}", elem, count);
     /// }
     /// ```
-    pub fn element_counts(&self) -> MapIter<T, usize> {
-        self.elem_counts.iter()
+    pub fn element_counts(&self) -> IterElementCounts<T> {
+        IterElementCounts {
+            iter: self.elem_counts.iter(),
+        }
+
     }
 
     /// An iterator visiting all distinct elements in arbitrary order.
@@ -1139,7 +1142,7 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for Multi
 /// [`element_counts`]: struct.MultiSet.html#method.element_counts
 #[derive(Debug)]
 pub struct IterElementCounts<'a, T: 'a> {
-    iter: ::std::collections::hash_map::Iter<'a, T, usize>,
+    iter: MapIter<'a, T, usize>,
 }
 
 impl<T> Clone for IterElementCounts<'_, T> {
