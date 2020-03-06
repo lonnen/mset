@@ -1182,6 +1182,7 @@ impl<T: fmt::Debug> fmt::Debug for Iter<'_, T> {
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`into_iter`]: struct.MultiSet.html#method.into_iter
+#[derive(Debug)]
 pub struct IntoIter<T> {
     iter: ::std::collections::hash_map::IntoIter<T, usize>,
 }
