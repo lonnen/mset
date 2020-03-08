@@ -5,4 +5,4 @@ descroption = "A mset / multiset / bag implementation"
 keyword = ["mset", "multiset", "bag", "counter", "collection"]
 authors = ["lonnen <chris.lonnen@gmail.com>"]
 edition = "2018"
-license="Apache-2.0"
+license="MIT/Apache-2.0"
