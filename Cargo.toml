@@ -1,8 +1,11 @@
 [package]
 name = "mset"
-version = "0.0.1"
-descroption = "A mset / multiset / bag implementation"
+version = "0.0.1" # remember to update html_root_url crate attribute
+description = "A mset / multiset / bag implementation"
 keyword = ["mset", "multiset", "bag", "counter", "collection"]
 authors = ["lonnen <chris.lonnen@gmail.com>"]
 edition = "2018"
 license="MIT/Apache-2.0"
+
+[dev-dependencies]
+version-sync = "0.8"
