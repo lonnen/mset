@@ -7,5 +7,8 @@ authors = ["lonnen <chris.lonnen@gmail.com>"]
 edition = "2018"
 license="MIT/Apache-2.0"
 
+[badges]
+circle-ci = { repository = "lonnen/mset" }
+
 [dev-dependencies]
 version-sync = "0.8"
