@@ -1,0 +1,21 @@
+language: rust
+
+os:
+    - osx
+    - linux
+
+rust:
+    - nightly
+    - beta
+    - stable
+
+script:
+    - cargo build --verbose --all
+    - cargo doc   --verbose --all
+
+    - cargo test  --verbose --all
+    - cargo test  --verbose --all
+
+notifications:
+  email:
+    on_success: never
