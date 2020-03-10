@@ -1,0 +1,29 @@
+environment:
+  RUSTUP_USE_HYPER: 1
+
+  matrix:
+  - TARGET: x86_64-pc-windows-msvc
+  - TARGET: i686-pc-windows-msvc
+install:
+  - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - rustup-init.exe -y --default-host %TARGET% --default-toolchain nightly
+  - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
+  - rustc -V
+  - cargo -V
+
+build: false
+
+test_script:
+  - cargo test --tests --no-default-features
+  - cargo test --tests --no-default-features --features=alloc,getrandom
+  # all stable features:
+  - cargo test --features=serde1,log
+  - cargo test --benches --features=nightly
+  - cargo test --examples
+  - cargo test --manifest-path rand_core/Cargo.toml
+  - cargo test --manifest-path rand_core/Cargo.toml --no-default-features
+  - cargo test --manifest-path rand_core/Cargo.toml --no-default-features --features=alloc
+  - cargo test --manifest-path rand_distr/Cargo.toml
+  - cargo test --manifest-path rand_pcg/Cargo.toml --features=serde1
+  - cargo test --manifest-path rand_chacha/Cargo.toml
+  - cargo test --manifest-path rand_hc/Cargo.toml
