@@ -2,10 +2,13 @@
 name = "mset"
 version = "0.0.1" # remember to update html_root_url crate attribute
 description = "A mset / multiset / bag implementation"
-keyword = ["mset", "multiset", "bag", "counter", "collection"]
+keywords = ["mset", "multiset", "bag", "counter", "collection"]
+categories = ["data-structures", "mathematics"]
 authors = ["lonnen <chris.lonnen@gmail.com>"]
 edition = "2018"
-license="MIT/Apache-2.0"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/lonnen/mset"
+readme = "README.md"
 
 [badges]
 circle-ci = { repository = "lonnen/mset" }
