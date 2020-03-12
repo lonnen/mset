@@ -1679,7 +1679,7 @@ mod test_mset {
         q.insert(77);
 
         let mut i = 0;
-        let expected = [3, 11];
+        let expected = [3, 11, 11];
         for x in p.intersection(&q) {
             assert!(expected.contains(x));
             i += x;
@@ -1690,10 +1690,10 @@ mod test_mset {
     #[test]
     fn test_difference() {
         let p: MultiSet<_> = [3, 5, 5, 11, 11].iter().cloned().collect();
-        let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
+        let q: MultiSet<_> = [1, 3, 3, 6, 11].iter().cloned().collect();
 
         let mut i = 0;
-        let expected = [5, 11];
+        let expected = [5, 5, 11];
         for e in p.difference(&q) {
             assert!(expected.contains(e));
             i += e;
@@ -1702,7 +1702,7 @@ mod test_mset {
         assert_eq!(i, expected.iter().sum());
 
         i = 0;
-        let expected = [1, 6];
+        let expected = [1, 3, 6];
         for e in q.difference(&p) {
             assert!(expected.contains(e));
             i += e;
@@ -1714,10 +1714,10 @@ mod test_mset {
     #[test]
     fn test_symmetric_difference() {
         let p: MultiSet<_> = [1, 3, 3, 3, 3, 5, 9, 11].iter().collect();
-        let q: MultiSet<_> = [2, 3, 3, 5, 9, 14, 22].iter().collect();
+        let q: MultiSet<_> = [2, 3, 3, 5, 9, 14, 22, 22].iter().collect();
 
         let mut i = 0;
-        let expected = [1, 3, 11, 2, 14, 22];
+        let expected = [1, 3, 3, 11, 2, 14, 22, 22];
         for e in p.symmetric_difference(&q) {
             assert!(expected.contains(e));
             i += *e;
