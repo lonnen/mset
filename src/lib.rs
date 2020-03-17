@@ -1300,13 +1300,12 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
     fn next(&mut self) -> Option<&'a T> {
         loop {
-
             match self.remaining {
-                0 => {}, // do nothing
+                0 => {} // do nothing
                 _ => {
                     self.remaining = self.remaining - 1;
                     return Some(self.curr?);
-                },
+                }
             }
 
             let (elem, count) = self.iter.next()?;
@@ -1365,11 +1364,11 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Difference<'a, T, S>
     fn next(&mut self) -> Option<&'a T> {
         loop {
             match self.remaining {
-                0 => {}, // do nothing
+                0 => {} // do nothing
                 _ => {
                     self.remaining = self.remaining - 1;
                     return Some(self.curr?);
-                },
+                }
             }
 
             let (elem, count) = self.iter.next()?;
