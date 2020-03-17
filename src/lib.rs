@@ -729,6 +729,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         Difference {
             iter: self.iter(),
             other,
+            curr: None,
+            remaining: 0,
         }
     }
 
@@ -1344,6 +1346,8 @@ pub struct Difference<'a, T, S> {
     iter: Iter<'a, T>,
     // the second mset
     other: &'a MultiSet<T, S>,
+    curr: Option<&'a T>,
+    remaining: usize,
 }
 
 impl<T, S> Clone for Difference<'_, T, S> {
@@ -1360,19 +1364,22 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Difference<'a, T, S>
 
     fn next(&mut self) -> Option<&'a T> {
         loop {
+            match self.remaining {
+                0 => {}, // do nothing
+                _ => {
+                    self.remaining = self.remaining - 1;
+                    return Some(self.curr?);
+                },
+            }
+
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
                 Some(c) => c.clone(),
                 None => 0usize,
             };
 
-            if count > &other_count {
-                let result = count - other_count;
-
-                while result > 0 {
-                    return Some(elem);
-                }
-            }
+            self.curr = Some(elem);
+            self.remaining = count.saturating_sub(other_count);
         }
     }
 
