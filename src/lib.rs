@@ -1287,7 +1287,7 @@ pub struct Intersection<'a, T: 'a, S: 'a> {
     remaining: usize,
 }
 
-impl<T, S> Clone for Intersection<'_, T, S> {
+impl<T: Clone, S> Clone for Intersection<'_, T, S> {
     fn clone(&self) -> Self {
         Intersection {
             iter: self.iter.clone(),
@@ -1351,7 +1351,7 @@ pub struct Difference<'a, T, S> {
     remaining: usize,
 }
 
-impl<T, S> Clone for Difference<'_, T, S> {
+impl<T: Clone, S> Clone for Difference<'_, T, S> {
     fn clone(&self) -> Self {
         Difference {
             iter: self.iter.clone(),
@@ -1409,7 +1409,7 @@ pub struct SymmetricDifference<'a, T: 'a, S: 'a> {
     iter: Chain<Difference<'a, T, S>, Difference<'a, T, S>>,
 }
 
-impl<T, S> Clone for SymmetricDifference<'_, T, S> {
+impl<T: Clone, S> Clone for SymmetricDifference<'_, T, S> {
     fn clone(&self) -> Self {
         SymmetricDifference {
             iter: self.iter.clone(),
@@ -1450,7 +1450,7 @@ pub struct Union<'a, T: 'a> {
     remaining: usize,
 }
 
-impl<T> Clone for Union<'_, T> {
+impl<T: Clone> Clone for Union<'_, T> {
     fn clone(&self) -> Self {
         Union {
             iter: self.iter.clone(),
