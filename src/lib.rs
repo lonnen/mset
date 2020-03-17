@@ -729,6 +729,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         Difference {
             iter: self.iter(),
             other,
+            curr: None,
+            remaining: 0,
         }
     }
 
@@ -783,6 +785,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         Intersection {
             iter: self.iter(),
             other: other,
+            curr: None,
+            remaining: 0,
         }
     }
 
@@ -1277,12 +1281,15 @@ pub struct Intersection<'a, T: 'a, S: 'a> {
     iter: Iter<'a, T>,
     // the second mset
     other: &'a MultiSet<T, S>,
+    curr: Option<&'a T>,
+    remaining: usize,
 }
 
 impl<T: Clone, S> Clone for Intersection<'_, T, S> {
     fn clone(&self) -> Self {
         Intersection {
             iter: self.iter.clone(),
+            curr: self.curr.clone(),
             ..*self
         }
     }
@@ -1293,15 +1300,22 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
     fn next(&mut self) -> Option<&'a T> {
         loop {
+            match self.remaining {
+                0 => {} // do nothing
+                _ => {
+                    self.remaining = self.remaining - 1;
+                    return Some(self.curr?);
+                }
+            }
+
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
                 Some(c) => c.clone(),
                 None => 0usize,
             };
 
-            for _ in 0..min(*count, other_count) {
-                return Some(elem);
-            }
+            self.curr = Some(elem);
+            self.remaining = min(*count, other_count);
         }
     }
 
@@ -1331,6 +1345,8 @@ pub struct Difference<'a, T, S> {
     iter: Iter<'a, T>,
     // the second mset
     other: &'a MultiSet<T, S>,
+    curr: Option<&'a T>,
+    remaining: usize,
 }
 
 impl<T: Clone, S> Clone for Difference<'_, T, S> {
@@ -1347,19 +1363,22 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Difference<'a, T, S>
 
     fn next(&mut self) -> Option<&'a T> {
         loop {
+            match self.remaining {
+                0 => {} // do nothing
+                _ => {
+                    self.remaining = self.remaining - 1;
+                    return Some(self.curr?);
+                }
+            }
+
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
                 Some(c) => c.clone(),
                 None => 0usize,
             };
 
-            if count > &other_count {
-                let result = count - other_count;
-
-                while result > 0 {
-                    return Some(elem);
-                }
-            }
+            self.curr = Some(elem);
+            self.remaining = count.saturating_sub(other_count);
         }
     }
 
@@ -1679,7 +1698,7 @@ mod test_mset {
         q.insert(77);
 
         let mut i = 0;
-        let expected = [3, 11];
+        let expected = [3, 11, 11];
         for x in p.intersection(&q) {
             assert!(expected.contains(x));
             i += x;
@@ -1690,10 +1709,10 @@ mod test_mset {
     #[test]
     fn test_difference() {
         let p: MultiSet<_> = [3, 5, 5, 11, 11].iter().cloned().collect();
-        let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
+        let q: MultiSet<_> = [1, 3, 3, 6, 11].iter().cloned().collect();
 
         let mut i = 0;
-        let expected = [5, 11];
+        let expected = [5, 5, 11];
         for e in p.difference(&q) {
             assert!(expected.contains(e));
             i += e;
@@ -1702,7 +1721,7 @@ mod test_mset {
         assert_eq!(i, expected.iter().sum());
 
         i = 0;
-        let expected = [1, 6];
+        let expected = [1, 3, 6];
         for e in q.difference(&p) {
             assert!(expected.contains(e));
             i += e;
@@ -1714,10 +1733,10 @@ mod test_mset {
     #[test]
     fn test_symmetric_difference() {
         let p: MultiSet<_> = [1, 3, 3, 3, 3, 5, 9, 11].iter().collect();
-        let q: MultiSet<_> = [2, 3, 3, 5, 9, 14, 22].iter().collect();
+        let q: MultiSet<_> = [2, 3, 3, 5, 9, 14, 22, 22].iter().collect();
 
         let mut i = 0;
-        let expected = [1, 3, 11, 2, 14, 22];
+        let expected = [1, 3, 3, 11, 2, 14, 22, 22];
         for e in p.symmetric_difference(&q) {
             assert!(expected.contains(e));
             i += *e;
