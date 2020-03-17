@@ -783,6 +783,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         Intersection {
             iter: self.iter(),
             other: other,
+            curr: None,
+            remaining: 0,
         }
     }
 
@@ -1277,12 +1279,15 @@ pub struct Intersection<'a, T: 'a, S: 'a> {
     iter: Iter<'a, T>,
     // the second mset
     other: &'a MultiSet<T, S>,
+    curr: Option<&'a T>,
+    remaining: usize,
 }
 
 impl<T, S> Clone for Intersection<'_, T, S> {
     fn clone(&self) -> Self {
         Intersection {
             iter: self.iter.clone(),
+            curr: self.curr.clone(),
             ..*self
         }
     }
@@ -1293,15 +1298,23 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
     fn next(&mut self) -> Option<&'a T> {
         loop {
+
+            match self.remaining {
+                0 => {}, // do nothing
+                _ => {
+                    self.remaining = self.remaining - 1;
+                    return Some(self.curr?);
+                },
+            }
+
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
                 Some(c) => c.clone(),
                 None => 0usize,
             };
 
-            for _ in 0..min(*count, other_count) {
-                return Some(elem);
-            }
+            self.curr = Some(elem);
+            self.remaining = min(*count, other_count);
         }
     }
 
