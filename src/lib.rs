@@ -192,8 +192,8 @@ impl<T, S> MultiSet<T, S> {
     ///     println!("{}: {}", elem, count);
     /// }
     /// ```
-    pub fn element_counts(&self) -> IterElementCounts<T> {
-        IterElementCounts {
+    pub fn element_counts(&self) -> ElementCounts<T> {
+        ElementCounts {
             iter: self.elem_counts.iter(),
         }
     }
@@ -1150,19 +1150,19 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for Multi
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`element_counts`]: struct.MultiSet.html#method.element_counts
 #[derive(Debug)]
-pub struct IterElementCounts<'a, T: 'a> {
+pub struct ElementCounts<'a, T: 'a> {
     iter: MapIter<'a, T, usize>,
 }
 
-impl<T> Clone for IterElementCounts<'_, T> {
+impl<T> Clone for ElementCounts<'_, T> {
     fn clone(&self) -> Self {
-        IterElementCounts {
+        ElementCounts {
             iter: self.iter.clone(),
         }
     }
 }
 
-impl<'a, T> Iterator for IterElementCounts<'a, T> {
+impl<'a, T> Iterator for ElementCounts<'a, T> {
     type Item = (&'a T, &'a usize);
 
     fn next(&mut self) -> Option<(&'a T, &'a usize)> {
@@ -1174,13 +1174,13 @@ impl<'a, T> Iterator for IterElementCounts<'a, T> {
     }
 }
 
-impl<T> ExactSizeIterator for IterElementCounts<'_, T> {
+impl<T> ExactSizeIterator for ElementCounts<'_, T> {
     fn len(&self) -> usize {
         self.iter.len()
     }
 }
 
-impl<T> FusedIterator for IterElementCounts<'_, T> {}
+impl<T> FusedIterator for ElementCounts<'_, T> {}
 
 /// An iterator over the items of a `MultiSet`.
 ///
