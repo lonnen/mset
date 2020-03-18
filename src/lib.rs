@@ -810,6 +810,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     pub fn union<'a>(&'a self, other: &'a MultiSet<T, S>) -> Union<'a, T> {
         Union {
             iter: self.iter().chain(other.iter()),
+            curr: None,
+            remaining: 0,
         }
     }
 
@@ -948,7 +950,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<T, S>> for 
     /// let mset = &p | &q;
     ///
     /// let mut i = 0;
-    /// let expected = [1, 2, 3, 3, 4, 5];
+    /// let expected = [1, 2, 3, 3, 3, 3, 4, 5];
     /// for (e, m) in &mset {
     ///     assert!(expected.contains(e));
     ///     i += (e * m);
@@ -1300,12 +1302,13 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
     fn next(&mut self) -> Option<&'a T> {
         loop {
+
             match self.remaining {
-                0 => {} // do nothing
+                0 => {}, // do nothing
                 _ => {
                     self.remaining = self.remaining - 1;
                     return Some(self.curr?);
-                }
+                },
             }
 
             let (elem, count) = self.iter.next()?;
@@ -1364,11 +1367,11 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Difference<'a, T, S>
     fn next(&mut self) -> Option<&'a T> {
         loop {
             match self.remaining {
-                0 => {} // do nothing
+                0 => {}, // do nothing
                 _ => {
                     self.remaining = self.remaining - 1;
                     return Some(self.curr?);
-                }
+                },
             }
 
             let (elem, count) = self.iter.next()?;
@@ -1444,12 +1447,15 @@ impl<T: fmt::Debug + Eq + Hash + Clone, S: BuildHasher> fmt::Debug
 /// [`union`]: struct.MultiSet.html#method.union
 pub struct Union<'a, T: 'a> {
     iter: Chain<Iter<'a, T>, Iter<'a, T>>,
+    curr: Option<&'a T>,
+    remaining: usize,
 }
 
 impl<T> Clone for Union<'_, T> {
     fn clone(&self) -> Self {
         Union {
             iter: self.iter.clone(),
+            ..*self
         }
     }
 }
@@ -1461,11 +1467,18 @@ impl<'a, T: Eq + Hash + Clone> Iterator for Union<'a, T> {
 
     fn next(&mut self) -> Option<&'a T> {
         loop {
-            let (elem, count) = self.iter.next()?;
-            let result = count.clone();
-            while result > 0 {
-                return Some(elem);
+            match self.remaining {
+                0 => {}, // do nothing
+                _ => {
+                    self.remaining = self.remaining - 1;
+                    return Some(self.curr?);
+                },
             }
+
+            let (elem, count) = self.iter.next()?;
+
+            self.curr = Some(elem);
+            self.remaining = *count;
         }
     }
 
@@ -1670,7 +1683,7 @@ mod test_mset {
         let q: MultiSet<_> = [1, 3, 6, 11].iter().cloned().collect();
 
         let mut i = 0;
-        let expected = [1, 3, 3, 5, 6, 11, 11];
+        let expected = [1, 3, 3, 5, 6, 11, 11, 11];
         for e in p.union(&q) {
             assert!(expected.contains(e));
             i += e;
