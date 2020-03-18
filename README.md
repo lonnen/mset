@@ -10,13 +10,23 @@ This crate provides a [multiset](https://en.wikipedia.org/wiki/Multiset) impleme
 
 A mset, multiset, or bag is a set that allows multiple occurances of an element. It supports many basic set operations, e.g. membership test, union, intersection, and difference.
 
+* [Documentation](https://docs.rs/mset/0.0.1/mset/struct.MultiSet.html)
+* [Release Notes](https://github.com/lonnen/mset/releases)
+
 ## Usage
 
-Don't use this yet. It'll show up on Cargo when in it's in a useful state.
+Add this to your `Cargo.toml`:
 
-## Documentation
+```toml
+[dependencies]
+mset = "0.0.1"
+```
 
-The code is being written with doc comments. This will link to Cargo doc when it's published.
+Now, you can use  mset:
+
+```rust
+extern crate mset;
+```
 
 ## License
 
