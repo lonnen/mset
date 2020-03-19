@@ -520,7 +520,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///
     /// let mut mset: MultiSet<_> = MultiSet::new();
     /// assert_eq!(mset.insert('a'), true);
-    /// assert_eq!(!mset.insert('a'), false);
+    /// assert_eq!(mset.insert('a'), false);
     ///
     /// assert_eq!(mset.len(), 2);
     /// assert_eq!(mset.elements().len(), 1);
