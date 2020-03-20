@@ -389,27 +389,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.shrink_to_fit();
     }
 
-    /// Creat a `MultiSet` with the same BuildHasher type.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    /// use std::collections::HashMap;
-    ///
-    /// let mut m = HashMap::new();
-    /// m.insert('a', 4);
-    /// m.insert('z', 1);
-    ///
-    /// let mset: MultiSet<_> = MultiSet::from_hashmap(m);
-    ///
-    /// assert_eq!(mset.elements().len(), 2);
-    /// assert_eq!(mset.len(), 5);
-    /// ```
-    pub fn from_hashmap(rhs: HashMap<T, usize, S>) -> Self {
-        Self { elem_counts: rhs }
-    }
-
     /// An iterator visitng all distinct elements and counts in arbitrary order.
     /// The iterator element type is `&'a (T, usize)`.
     ///
@@ -922,6 +901,29 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         T: Borrow<T>,
     {
         self.elem_counts.get_key_value(element)
+    }
+}
+
+/// Create a `MultiSet` from a `HashMap<T, usize>`.
+///
+/// # Examples
+///
+/// ```
+/// use mset::MultiSet;
+/// use std::collections::HashMap;
+///
+/// let mut m = HashMap::new();
+/// m.insert('a', 4);
+/// m.insert('z', 1);
+///
+/// let mset: MultiSet<_> = MultiSet::from(m);
+///
+/// assert_eq!(mset.elements().len(), 2);
+/// assert_eq!(mset.len(), 5);
+/// ```
+impl<T: Hash + Eq> From<HashMap<T, usize>> for MultiSet<T> {
+    fn from(map: HashMap<T, usize>) -> Self {
+        Self { elem_counts: map }
     }
 }
 
