@@ -1,10 +1,5 @@
 #![doc(html_root_url = "https://docs.rs/mset/0.0.1")]
 
-// Optional Serde support
-#[cfg(feature = "serde")]
-#[macro_use]
-use serde;
-
 use std::borrow::Borrow;
 use std::cmp::min;
 use std::collections::hash_map::RandomState;
@@ -121,7 +116,6 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// [`HashMap`]: struct.HashMap.html
 /// [`PartialEq`]: trait.PartialEq.html
 /// [`RefCell`]: struct.RefCell.html
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone)]
 pub struct MultiSet<T, S = RandomState> {
     elem_counts: HashMap<T, usize, S>,

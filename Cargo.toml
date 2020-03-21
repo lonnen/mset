@@ -15,8 +15,5 @@ circle-ci = { repository = "lonnen/mset" }
 appveyor = { repository = "lonnen/mset" }
 travis-ci = { repository = "lonnen/mset" }
 
-[dependencies]
-serde = { version = "1.0", optional = true, features = ["derive"] }
-
 [dev-dependencies]
 version-sync = "0.8"
