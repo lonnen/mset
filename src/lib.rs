@@ -543,10 +543,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// Remove a value from the multiset. Returns whether the value was
     /// present in the multiset.
     ///
-    /// The value may be any borrowed form of the multiset's value type,
-    /// but [`Hash`] and [`Eq`] on the borrowed form *must* match those for
-    /// the value type.
-    ///
     /// [`Eq`]: trait.Eq.html
     /// [`Hash`]: trait.Hash.html
     ///
@@ -570,10 +566,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
 
     /// Remove multiple values from the multiset. Returns whether the values
     /// were present in the multiset.
-    ///
-    /// The values may be any borrowed form of the multiset's value type,
-    /// but [`Hash`] and [`Eq`] on the borrowed form *must* match those for
-    /// the value type.
     ///
     /// [`Eq`]: trait.Eq.html
     /// [`Hash`]: trait.Hash.html
@@ -614,10 +606,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
 
     /// Removes all instances of an element from the multiset and returns the
     /// multiplicity, if the element is in the multiset.
-    ///
-    /// The value may be any borrowed form of the multiset's value type, but
-    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for
-    /// the value type.
     ///
     /// # Examples
     ///
@@ -796,10 +784,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
 
     /// Returns `true` if the multiset contains a value.
     ///
-    /// The value may be any borrowed form of the multiset's value type, but
-    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for the
-    /// value type.
-    ///
     /// # Examples
     ///
     /// ```
@@ -825,11 +809,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
 
     /// Returns a reference to the value corresponding to the element.
     ///
-    /// The element may be any borrowed form of the multiset's element type,
-    /// but `Hash` and `Eq` on the borrowed form *must* match those
-    /// for the element type.
-    ///
-    ///
     /// # Examples
     ///
     /// ```
@@ -850,9 +829,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     }
 
     /// Returns a mutable reference to the value corresponding to the element.
-    ///
-    /// The element may be any borrowed form of the map's element type, but [`Hash`]
-    /// and [`Eq`] on the borrowed form *must* match those for the element type.
     ///
     /// [`Eq`]: trait.Eq.html
     /// [`Hash`]: trait.Hash.html
@@ -880,10 +856,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     }
 
     /// Returns the element-multiplicity pair corresponding to the supplied element.
-    ///
-    /// The supplied element may be any borrowed form of the mset's type,
-    /// but `Hash` and `Eq` on the borrowed form *must* match those for
-    /// the element type.
     ///
     /// # Examples
     ///
