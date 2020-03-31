@@ -1,4 +1,16 @@
 #![doc(html_root_url = "https://docs.rs/mset/0.0.2")]
+//! A hash multiset implemented as a `HashMap` where the value is `usize`.
+//!
+//! A mset, multiset, or bag is a set that allows multiple occurances of an element. This
+//! implementation is backed by an underlying [`HashMap`] instance and supports an API similar
+//! to set with some additions to make multiple additions and removals easier and a [`Clone`]
+//! constraint for efficiency of storage.
+//!
+//! See the [`MultiSet`] struct documentation for more examples and specific constraints.
+//!
+//! [`Clone`]: https://doc.rust-lang.org/std/clone/trait.Clone.html
+//! [`HashMap`]: struct.HashMap.html
+//! [`MultiSet`]: struct.MultiSet.html
 
 use std::borrow::Borrow;
 use std::cmp::min;
@@ -112,7 +124,7 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// [`Cell`]: struct.Cell.html
 /// [`Eq`]: trait.Eq.html
 /// [`Hash`]: trait.Hash.html
-/// [`Clone`]: trait.Clone.html
+/// [`Clone`]: https://doc.rust-lang.org/std/clone/trait.Clone.html
 /// [`HashMap`]: struct.HashMap.html
 /// [`PartialEq`]: trait.PartialEq.html
 /// [`RefCell`]: struct.RefCell.html
