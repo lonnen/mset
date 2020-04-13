@@ -840,33 +840,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.get(element)
     }
 
-    /// Returns a mutable reference to the value corresponding to the element.
-    ///
-    /// [`Eq`]: trait.Eq.html
-    /// [`Hash`]: trait.Hash.html
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mset::MultiSet;
-    ///
-    /// let mut mset: MultiSet<_> = MultiSet::new();
-    /// mset.insert('a');
-    ///
-    /// if let Some(x) = mset.get_mut(&'a') {
-    ///     *x = 5;
-    /// }
-    /// assert_eq!(mset.get(&'a'), Some(&5));
-    ///
-    /// ```
-    pub fn get_mut<Q: ?Sized>(&mut self, element: &Q) -> Option<&mut usize>
-    where
-        T: Borrow<Q>,
-        Q: Hash + Eq + Clone,
-    {
-        self.elem_counts.get_mut(element)
-    }
-
     /// Returns the element-multiplicity pair corresponding to the supplied element.
     ///
     /// # Examples
@@ -881,8 +854,6 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get_element_multiplicity(&'b'), None);
     /// ```
     pub fn get_element_multiplicity(&self, element: &T) -> Option<(&T, &usize)>
-    where
-        T: Borrow<T>,
     {
         self.elem_counts.get_key_value(element)
     }
