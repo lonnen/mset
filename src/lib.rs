@@ -572,8 +572,12 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert_eq!(mset.capacity(), 0);
     /// ```
-    pub fn remove(&mut self, value: &T) -> bool {
-        self.remove_times(value, 1)
+    pub fn remove<Q: ?Sized>(&mut self, element: &Q) -> bool
+    where
+        T: Borrow<Q>,
+        Q: Hash + Eq + Clone,
+    {
+        self.remove_times(element, 1)
     }
 
     /// Remove multiple values from the multiset. Returns whether the values
@@ -594,26 +598,21 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert!(mset.is_empty());
     /// ```
-    pub fn remove_times(&mut self, value: &T, n: usize) -> bool {
-        match self.elem_counts.entry((*value).clone()) {
-            Entry::Occupied(mut view) => {
-                let curr_value = view.get().clone();
-                if curr_value < n {
-                    view.remove();
-                    return false;
-                } else {
-                    let new_value = view.get() - n;
-                    match new_value {
-                        0 => view.remove(),
-                        _ => view.insert(new_value),
-                    };
-                    return true;
-                }
-            }
-            Entry::Vacant(__) => {
-                return false;
-            }
-        };
+    pub fn remove_times<Q: ?Sized>(&mut self, element: &Q, multiplicity: usize) -> bool
+    where
+        T: Borrow<Q>,
+        Q: Hash + Eq + Clone,
+    {
+        let default_value = &mut 0;
+        let value = self.elem_counts.get_mut(element).unwrap_or(default_value);
+
+        *value = value.saturating_sub(multiplicity);
+
+        if *value == 0 {
+            self.elem_counts.remove(element);
+            return false
+        }
+        return true;
     }
 
     /// Removes all instances of an element from the multiset and returns the
@@ -1477,10 +1476,24 @@ mod test_mset {
         mset.insert_times('a', 2);
         mset.insert('b');
         mset.insert('b');
+        for (e, m) in mset.iter() {
+            println!("{}, {}", e, m);
+        }
         mset.remove(&'a');
         mset.remove(&'a');
+
+        println!(" .  . . ");
+
+        for (e, m) in mset.iter() {
+            println!("{}, {}", e, m);
+        }
+
+        println!(" .  . . ");
         mset.remove_times(&'b', 2);
         mset.shrink_to_fit();
+        for (e, m) in mset.iter() {
+            println!("{}, {}", e, m);
+        }
         assert_eq!(mset.capacity(), 0);
 
         let mut m = MSC::new();
