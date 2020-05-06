@@ -606,12 +606,21 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         let default_value = &mut 0;
         let value = self.elem_counts.get_mut(element).unwrap_or(default_value);
 
+        // exactly enough elements
+        if *value == multiplicity {
+            self.elem_counts.remove(element);
+            return true
+        }
+
         *value = value.saturating_sub(multiplicity);
 
+        // insufficient elements
         if *value == 0 {
             self.elem_counts.remove(element);
             return false
         }
+
+        // more than enough elements
         return true;
     }
 
