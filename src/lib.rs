@@ -609,7 +609,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         // exactly enough elements
         if *value == multiplicity {
             self.elem_counts.remove(element);
-            return true
+            return true;
         }
 
         *value = value.saturating_sub(multiplicity);
@@ -617,7 +617,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         // insufficient elements
         if *value == 0 {
             self.elem_counts.remove(element);
-            return false
+            return false;
         }
 
         // more than enough elements
@@ -861,8 +861,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get_element_multiplicity(&'a'), Some((&'a', &1)));
     /// assert_eq!(mset.get_element_multiplicity(&'b'), None);
     /// ```
-    pub fn get_element_multiplicity(&self, element: &T) -> Option<(&T, &usize)>
-    {
+    pub fn get_element_multiplicity(&self, element: &T) -> Option<(&T, &usize)> {
         self.elem_counts.get_key_value(element)
     }
 }
