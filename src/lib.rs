@@ -1,3 +1,5 @@
+// I think this should not be necessary?
+// I am not exactly sure, but I've never used this for crates.io crates, and it seems to work fine.
 #![doc(html_root_url = "https://docs.rs/mset/0.0.3")]
 //! A hash multiset implemented as a `HashMap` where the value is `usize`.
 //!
@@ -14,23 +16,30 @@
 
 use std::borrow::Borrow;
 use std::cmp::min;
+// An alternative would be to say
+// use std::collections::hash_map::{self, RandomState}
+// And then use semi-qualified names, like `hash_map::IntoIter` at the call site.
 use std::collections::hash_map::RandomState;
 use std::collections::hash_map::{
     Drain as MapDrain, Entry, IntoIter as MapIntoIter, Iter as MapIter, Keys,
 };
 use std::collections::HashMap;
+// Default is in prelude, so there's no need to import it.
 use std::default::Default;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
+// For ops, I usually import them as `use std::ops` and then write `impl ops::BitAnd for Foo`.
+// Importing a trait has a benefit that you can call its methods directly (foo.bit_and), but
+// for just *implementing* a trait, using a qualified name is less verbose.
 use std::ops::{BitAnd, BitOr, BitXor, Sub};
 
 /// A hash multiset implemented as a `HashMap` where the value is `usize`.
 ///
 /// As with the [`HashMap`] type, a `MultiSet` requires that the elements
 /// implement the [`Eq`] and [`Hash`] traits. This can frequently be achieved by
-/// using `#[derive(PartialEq, Eq, Hash)]`. If you implement these yourself,
-/// it is important that the following property holds:
+/// using `#[derive(PartialEq, Eq, Hash)]`. If you implement these yourself, it
+/// is important that the following property holds:
 ///
 /// ```text
 /// e1 == e2 -> hash(e1) == hash(e2)
@@ -38,19 +47,19 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 /// In other words, if two elements are equal, their hashes must also be equal.
 ///
-/// It is a logic error for an item to be modified in such a way that the
-/// item's hash, as determined by the [`Hash`] trait, or its equality, as
-/// determined by the [`Eq`] trait, changes while it is in the multiset. This is
-/// normally only possible through [`Cell`], [`RefCell`], global state, I/O, or
-/// unsafe code.
+/// It is a logic error for an item to be modified in such a way that the item's
+/// hash, as determined by the [`Hash`] trait, or its equality, as determined by
+/// the [`Eq`] trait, changes while it is in the multiset. This is normally only
+/// possible through [`Cell`], [`RefCell`], global state, I/O, or unsafe code.
 ///
-/// In addition to these constraints, elements must implement the [`Clone`] trait.
-/// As above, this can frequently be derived using `#[derive(Clone)]` or adding the `Clone`
-/// trait to the other traits in an existing `#derive[...]` macro. A multiset stores
-/// the first element inserted with and a `usize`. When an api call returns one or more
-/// elements it will return clones of that initial element. For complex elements this can
-/// sometimes lead to unexpected behavior, and in those cases it may be preferable to
-/// explore other hash functions or non-hash map backed multiset implementations.
+/// In addition to these constraints, elements must implement the [`Clone`]
+/// trait. As above, this can frequently be derived using `#[derive(Clone)]` or
+/// adding the `Clone` trait to the other traits in an existing `#derive[...]`
+/// macro. A multiset stores the first element inserted with and a `usize`. When
+/// an api call returns one or more elements it will return clones of that
+/// initial element. For complex elements this can sometimes lead to unexpected
+/// behavior, and in those cases it may be preferable to explore other hash
+/// functions or non-hash map backed multiset implementations.
 ///
 /// # Examples
 ///
@@ -76,7 +85,11 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///              bag.elements().len());
 /// }
 ///
+/// // The fact that you need `.to_string()` here points that the API can be improved using
+/// // Borrow. The idea is that you can use `&str` to lookup things in `Set<String>` because
+/// // Hash and Eq behave the same way for `&str` and `String`. The `Borrow` trait captures this property.
 /// // Remove a word
+/// // EDIT: Ahhh, you correctly use `Borrow`, but you over constrain the element to be Clone
 /// bag.remove(&"23".to_string());
 ///
 /// // Iterate over everything.
@@ -86,8 +99,8 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// ```
 ///
 /// The easiest way to use `MultiSet` with a custom type is to derive [`Eq`],
-/// [`Hash`], and [`Clone`]. We must also derive [`PartialEq`], this will in the future be
-/// implied by [`Eq`].
+/// [`Hash`], and [`Clone`]. We must also derive [`PartialEq`], this will in the
+/// future be implied by [`Eq`].
 ///
 /// ```
 /// use mset::MultiSet;
@@ -117,22 +130,41 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// use mset::MultiSet;
 ///
 /// let gps: MultiSet<&'static str> =
-///     ["Deathmlom", "Bun Roy", "Funbees", "Sporky", "Bun Roy"].iter().cloned().collect();
+///     ["Deathmlom", "Bun Roy", "Funbees", "Sporky", "Bun Roy"].iter().copied().collect(); // a relatively recent addition
 /// // use the values stored in the multiset
 /// ```
 ///
-/// [`Cell`]: struct.Cell.html
-/// [`Eq`]: trait.Eq.html
-/// [`Hash`]: trait.Hash.html
-/// [`Clone`]: https://doc.rust-lang.org/std/clone/trait.Clone.html
-/// [`HashMap`]: struct.HashMap.html
-/// [`PartialEq`]: trait.PartialEq.html
-/// [`RefCell`]: struct.RefCell.html
+/// [`Cell`]: struct.Cell.html [`Eq`]: trait.Eq.html [`Hash`]: trait.Hash.html
+/// [`Clone`]: https://doc.rust-lang.org/std/clone/trait.Clone.html [`HashMap`]:
+/// struct.HashMap.html [`PartialEq`]: trait.PartialEq.html [`RefCell`]:
+/// struct.RefCell.html
 #[derive(Clone)]
 pub struct MultiSet<T, S = RandomState> {
+    // I think we have invariant that all counts are strictly positive, right?
+    // might be a good idea to put it as a comment on this field.
     elem_counts: HashMap<T, usize, S>,
 }
 
+// In general, is better to not restrict type parameters unless necessary.
+// Here, `impl<T> MultiSet<T, RandomState>` would work.
+//
+// It is interesting that creating `HashSet`s with keys which do not implement `Hash` can actually be useful in practice.
+// It is useful, for example, for a raw_entry API in HashBrown:
+// https://docs.rs/hashbrown/0.7.2/hashbrown/hash_map/struct.RawVacantEntryMut.html#method.insert_with_hasher
+//
+// Here's a nice example where this weirdness might be useful.
+// Let's say you are writing a container for a set of strings, where you want to store all strings continiously:
+//
+// struct Interner {
+//   data: String,
+//   elements: HashSet<(usize, usize)>
+// }
+//
+// The semantics is that for each `(i, j)` in `elements`, the `Interner` contains `&data[i..j]` string.
+// So, you want to store pairs of indices in the `HashSet`, with a rule for `Eq` / `Hash` being "go and look into this other field of the data structure".
+// RawEntry API would allow you to supply the required closures without constraning the keys themselves
+// See full example here: https://gist.github.com/CAD97/036c700fad1b4b159421eca089783122#file-complete_lib-rs
+// TL;DR: just remove the bounds :-)
 impl<T: Hash + Eq + Clone> MultiSet<T, RandomState> {
     /// Create an empty `MultiSet`.
     ///
@@ -188,6 +220,16 @@ impl<T, S> MultiSet<T, S> {
         self.elem_counts.capacity()
     }
 
+    // The `&a (T, usize)` element type is rather restrictive, API-wise.
+    // It requires that you literarly store a pair inside, to which you take a reference.
+    // Such return type would prevent you from organizing data as `(Vec<T>, Vec<usize>)`, for example.
+    // A more flexible element type would be `(&T, usize)`.
+    // I see that the actual implementation returns `(&T, &usize)` which is better than `&a (T, usize)`,
+    // but is still restricive in that it requires you to store the actual `usize`s
+    // (ie, a representation where you store, eg, delta to a prev element won't work).
+    // Given that `usize` is a cheap Copy type, I'd just use `(&T, usize)`.
+    //
+    // Additionally, I think this method duplicates `.iter()` exactly? I'd keep only the `iter`
     /// An iterator visitng all distinct elements and counts in arbitrary order.
     /// The iterator element type is `&'a (T, usize)`.
     ///
@@ -229,6 +271,14 @@ impl<T, S> MultiSet<T, S> {
     ///     println!("{}", e);
     /// }
     /// ```
+    // Not related to rust, but `elements` as a name would be ambiguous at a call site, something like
+    // distinct_elements would be better.
+    // Note that this "leaks" `Keys<T, usize>` return type.
+    // So if you switch internal impl from `std::HashMap` to `hashbrown::HashMap`, it might break the callers
+    // who does `let _: std::collections::hash_map::Keys = bag.elments()`.
+    // I think this is a minor problem and is probably not worth fixing, but it might make sense to do at least
+    // `pub type Elements<'a>  = std::collections::HashMap<'a, usize>`
+    // so that, when the user needs to name the type, they can use a name from the library.
     pub fn elements(&self) -> Keys<T, usize> {
         self.elem_counts.keys()
     }
@@ -249,10 +299,10 @@ impl<T, S> MultiSet<T, S> {
     ///
     /// assert_eq!(mset.len(), 12);
     /// ```
+    // It might be slightly surprising that ths is not a `O(1) methods, this probably should be mentioned in the docs.
     pub fn len(&self) -> usize {
-        self.elem_counts
-            .values()
-            .fold(0, |acc, multiplicity| acc + multiplicity)
+        self.elem_counts.values().sum()
+        // .fold(0, |acc, multiplicity| acc + multiplicity)
     }
 
     /// Returns `true` if the multiset contains no elements.
@@ -295,7 +345,9 @@ impl<T, S> MultiSet<T, S> {
     }
 }
 
-impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
+// Similarly, I think here we can remove the bounds.
+// I'll show this for Clone
+impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// Create an empty `MultiSet` using the specified hasher.
     ///
     /// The created MutliSet has the default initial capacity.
@@ -401,7 +453,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.shrink_to_fit();
     }
 
-    /// An iterator visitng all distinct elements and counts in arbitrary order.
+    /// An iterator visiting all distinct elements and counts in arbitrary order.
     /// The iterator element type is `&'a (T, usize)`.
     ///
     /// # Examples
@@ -421,6 +473,13 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         Iter {
             iter: self.elem_counts.iter(),
         }
+    }
+    pub fn iter_with_multiplicity(&self) -> impl Iterator<Item = T> + '_
+    where
+        T: Clone, // This is how you add `: Clone` bounds only when necessary.
+    {
+        self.iter()
+            .flat_map(|(el, cnt)| std::iter::repeat_with(move || el.clone()).take(*cnt))
     }
 
     /// Returns `true` if `self` has no elements in common with `other`.
@@ -442,6 +501,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(p.is_disjoint(&q), false);
     /// ```
     pub fn is_disjoint(&self, other: &MultiSet<T, S>) -> bool {
+        // This can be optimized by make sure to iterate the smaller (in terms of number of distinct elements) set first.
         self.iter().all(|(e, _)| !other.contains(e))
     }
 
@@ -453,7 +513,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let msup: MultiSet<_> = [1, 2, 2, 3].iter().cloned().collect();
+    /// let msup: MultiSet<_> = [1, 2, 2, 3].iter().copied().collect();
     /// let mut mset = MultiSet::new();
     ///
     /// assert!(mset.is_subset(&msup));
@@ -465,6 +525,10 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.is_subset(&msup), false);
     /// ```
     pub fn is_subset(&self, other: &MultiSet<T, S>) -> bool {
+        // 0 is a default value, so it can be simplified to
+        // self.iter()
+        //    .all(|(e, m)| *m <= other.get(e).copied().unwrap_or_default())
+
         self.iter().all(|(e, m)| match other.get(e) {
             Some(o_m) => m <= o_m,
             None => false,
@@ -479,7 +543,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let msub: MultiSet<_> = [1, 2, 2].iter().cloned().collect();
+    /// let msub: MultiSet<_> = [1, 2, 2].iter().copied().collect();
     /// let mut mset = MultiSet::new();
     ///
     /// assert_eq!(mset.is_superset(&msub), false);
@@ -575,7 +639,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     pub fn remove<Q: ?Sized>(&mut self, element: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + Clone,
+        Q: Hash + Eq + Clone, // We don't need `: Clone` for removal
     {
         self.remove_times(element, 1)
     }
@@ -598,13 +662,25 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert!(mset.is_empty());
     /// ```
-    pub fn remove_times<Q: ?Sized>(&mut self, element: &Q, multiplicity: usize) -> bool
+    pub fn remove_times<Q: ?Sized>(
+        &mut self,
+        element: &Q,
+        multiplicity: usize, /* inconsistent naming, this sometimes called `n`*/
+    ) -> bool
     where
         T: Borrow<Q>,
         Q: Hash + Eq + Clone,
     {
         let default_value = &mut 0;
         let value = self.elem_counts.get_mut(element).unwrap_or(default_value);
+
+        // I think theres a micro code-duplication, which can be removed
+        // let enough = *value >= multiplicity;
+        // *value = value.saturating_sub(multiplicity);
+        // if *value == 0 {
+        //     self.elem_counts.remove(element);
+        // }
+        // enough
 
         // exactly enough elements
         if *value == multiplicity {
@@ -639,8 +715,9 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///
     /// [`Eq`]: trait.Eq.html
     /// [`Hash`]: trait.Hash.html
-    pub fn take(&mut self, value: &T) -> Option<usize> {
-        self.elem_counts.remove_entry(value).map(|(_, v)| v)
+    // It seems lie this should return the element itself?
+    pub fn take(&mut self, value: &T) -> Option<(T, usize)> {
+        self.elem_counts.remove_entry(value)
     }
 
     /// Retains only the elements specified by the predicate.
@@ -661,6 +738,18 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// ```
     pub fn retain<F>(&mut self, mut f: F)
     where
+        // A bit of trivial: the signature for `Vec::retain` is considered to be a bug:
+        // https://doc.rust-lang.org/stable/std/vec/struct.Vec.html#method.retain
+        // The closure should have accepted `FnMut(&mut T)` for Vec, giving out only `&T` is
+        // needlessly restrictive.
+        //
+        // The same sort-of applies to other collections as well, but wth `&mut T` it would be pretty trivial
+        // to break invariants.
+        // However for Maps it's generally fine to hand out mut reference to values, so we can use the following signature:
+        //   F: FnMut(&T, &mut usize) -> bool,
+        // But then, we'd have to do an extra check to remove the element if the caller sets the count to zero.
+        //
+        // All in all, I'd go for `FnMut(&T, &mut usize)` or `FnMut(&T, usize)`, just `&usize` isn't really useful or convenient.
         F: FnMut(&T, &usize) -> bool,
     {
         self.elem_counts.retain(|e, m| f(e, m));
@@ -768,6 +857,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(diff1, diff2);
     /// assert_eq!(diff1, ['a', 'd'].iter().collect());
     /// ```
+    // I'd expect this to yield pair of `(&T, usize)` rather than just `&T`
     pub fn intersection<'a>(&'a self, other: &'a MultiSet<T, S>) -> Intersection<'a, T, S> {
         Intersection {
             iter: self.iter(),
@@ -794,6 +884,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// let union: MultiSet<_> = p.union(&q).collect();
     /// assert_eq!(union, ['a', 'b', 'b', 'c', 'c', 'd', 'd'].iter().collect());
     /// ```
+    // I'd expect this to yield pair of `(&T, usize)` rather than just `&T`
     pub fn union<'a>(&'a self, other: &'a MultiSet<T, S>) -> Union<'a, T> {
         Union {
             iter: self.iter().chain(other.iter()),
@@ -822,7 +913,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + Clone,
+        Q: Hash + Eq,
     {
         self.elem_counts.contains_key(value)
     }
@@ -840,10 +931,15 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get(&'a'), Some(&1));
     /// assert_eq!(mset.get(&'b'), None);
     /// ```
+    // Similarly, I'd just retun an `Option<usize>`
+    // It proably makes sense to document that `Some(0)` is an invalid return value.
+    // You can even use `Option<std::num::NonZeroUsize>`, but I'd probably stick with `usuze`.
+    // NonZeroTypes are geared primarily for storage optimizations (`Option<NonZeroX>` has the same size_of as X),
+    // but are awkward to actually do operations on.
     pub fn get<Q: ?Sized>(&self, element: &Q) -> Option<&usize>
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + Clone,
+        Q: Hash + Eq,
     {
         self.elem_counts.get(element)
     }
@@ -861,6 +957,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get_element_multiplicity(&'a'), Some((&'a', &1)));
     /// assert_eq!(mset.get_element_multiplicity(&'b'), None);
     /// ```
+    // This also could take advantage of `Borrow` trait.
     pub fn get_element_multiplicity(&self, element: &T) -> Option<(&T, &usize)> {
         self.elem_counts.get_key_value(element)
     }
@@ -883,6 +980,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
 /// assert_eq!(mset.elements().len(), 2);
 /// assert_eq!(mset.len(), 5);
 /// ```
+// I think it makes sense to add a reverse impl as well.
 impl<T: Hash + Eq> From<HashMap<T, usize>> for MultiSet<T> {
     fn from(map: HashMap<T, usize>) -> Self {
         Self { elem_counts: map }
@@ -1018,6 +1116,8 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Sub<&MultiSet<T, S>> for &M
 
 impl<T: Eq + Hash + Clone, S: BuildHasher> PartialEq for MultiSet<T, S> {
     fn eq(&self, other: &MultiSet<T, S>) -> bool {
+        // This can be simplified to
+        // self.elem_counts == other.elem_counts
         if self.len() != other.len() {
             return false;
         }
@@ -1082,6 +1182,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher> Extend<(T, usize)> for MultiSet<T, S>
     }
 }
 
+// I'd remove this impl: seems better if the caller clones the keys, to make `.clone`s visible.
 impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Extend<(&'a T, &'a usize)> for MultiSet<T, S> {
     fn extend<I: IntoIterator<Item = (&'a T, &'a usize)>>(&mut self, iter: I) {
         for (key, value) in iter.into_iter().map(|(k, v)| ((*k).clone(), (*v).clone())) {
@@ -1098,6 +1199,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<T> for MultiSet<T, S
     }
 }
 
+// Similarly, this impl hides `.clone`
 impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for MultiSet<T, S> {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         for key in iter.into_iter().map(|k| (*k).clone()) {
@@ -1167,15 +1269,22 @@ impl<T> Clone for Iter<'_, T> {
 }
 
 impl<'a, T> Iterator for Iter<'a, T> {
+    //type Item = (&'a T, usize);
     type Item = (&'a T, &'a usize);
 
     fn next(&mut self) -> Option<(&'a T, &'a usize)> {
+        // self.iter.next().map(|(el, &cnt)| (el, cnt))
         self.iter.next()
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
+    // This doesn't apply in this case, but there's unfortunatelly a pretty bad
+    // perofmrnace gotcha with delegating iterators in Rust.
+    // For `Iter`, you get default implementations of all the methods in terms of `next`.
+    // If the underling iterator provided more effecient impls for some methods, your lose these optimizations!
+    // So, when wrapping iterators, it's prudent to check which methods are overriden by the base iterator, and explicitelly forward them as well.
 }
 
 impl<T> ExactSizeIterator for Iter<'_, T> {
@@ -1247,6 +1356,8 @@ pub struct Intersection<'a, T: 'a, S: 'a> {
     iter: Iter<'a, T>,
     // the second mset
     other: &'a MultiSet<T, S>,
+    // This representaiton has an invalid state where `curr` is `None`, but `remaining` is non-zero.
+    // A more type-tight encocing would be `next: Option<&'a T, usize>`
     curr: Option<&'a T>,
     remaining: usize,
 }
@@ -1276,7 +1387,9 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
-                Some(c) => c.clone(),
+                // The best way to clone `&usize` is the `*` operator
+                // But, if you remove `&usize` from API, this should just go away.
+                Some(c) => *c,
                 None => 0usize,
             };
 
@@ -1324,7 +1437,7 @@ impl<T: Clone, S> Clone for Difference<'_, T, S> {
     }
 }
 
-impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Difference<'a, T, S> {
+impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
@@ -1446,6 +1559,7 @@ impl<'a, T: Eq + Hash + Clone> Iterator for Union<'a, T> {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
+        // I think this has wrong upper bound, each element underlying element is yilded multiple times.
         self.iter.size_hint()
     }
 }
@@ -1456,6 +1570,9 @@ impl<T: fmt::Debug + Eq + Hash + Clone> fmt::Debug for Union<'_, T> {
     }
 }
 
+// For libraries with well-defined API, it usually make sense to write integrated tests (in `tests/test-name.rs`).
+// Those test will see you library as an external crate, with proper visibility and such, you won't be able to accidentally
+// use some private API.
 #[cfg(test)]
 mod test_mset {
     use super::MultiSet;
