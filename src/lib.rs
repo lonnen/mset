@@ -19,7 +19,6 @@ use std::collections::hash_map::{
     Drain as MapDrain, Entry, IntoIter as MapIntoIter, Iter as MapIter, Keys,
 };
 use std::collections::HashMap;
-use std::default::Default;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
