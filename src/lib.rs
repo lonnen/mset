@@ -28,8 +28,8 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 /// As with the [`HashMap`] type, a `MultiSet` requires that the elements
 /// implement the [`Eq`] and [`Hash`] traits. This can frequently be achieved by
-/// using `#[derive(PartialEq, Eq, Hash)]`. If you implement these yourself,
-/// it is important that the following property holds:
+/// using `#[derive(PartialEq, Eq, Hash)]`. If you implement these yourself, it
+/// is important that the following property holds:
 ///
 /// ```text
 /// e1 == e2 -> hash(e1) == hash(e2)
