@@ -37,11 +37,10 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 ///
 /// In other words, if two elements are equal, their hashes must also be equal.
 ///
-/// It is a logic error for an item to be modified in such a way that the
-/// item's hash, as determined by the [`Hash`] trait, or its equality, as
-/// determined by the [`Eq`] trait, changes while it is in the multiset. This is
-/// normally only possible through [`Cell`], [`RefCell`], global state, I/O, or
-/// unsafe code.
+/// It is a logic error for an item to be modified in such a way that the item's
+/// hash, as determined by the [`Hash`] trait, or its equality, as determined by
+/// the [`Eq`] trait, changes while it is in the multiset. This is normally only
+/// possible through [`Cell`], [`RefCell`], global state, I/O, or unsafe code.
 ///
 /// In addition to these constraints, elements must implement the [`Clone`] trait.
 /// As above, this can frequently be derived using `#[derive(Clone)]` or adding the `Clone`
