@@ -42,13 +42,14 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// the [`Eq`] trait, changes while it is in the multiset. This is normally only
 /// possible through [`Cell`], [`RefCell`], global state, I/O, or unsafe code.
 ///
-/// In addition to these constraints, elements must implement the [`Clone`] trait.
-/// As above, this can frequently be derived using `#[derive(Clone)]` or adding the `Clone`
-/// trait to the other traits in an existing `#derive[...]` macro. A multiset stores
-/// the first element inserted with and a `usize`. When an api call returns one or more
-/// elements it will return clones of that initial element. For complex elements this can
-/// sometimes lead to unexpected behavior, and in those cases it may be preferable to
-/// explore other hash functions or non-hash map backed multiset implementations.
+/// In addition to these constraints, elements must implement the [`Clone`]
+/// trait. As above, this can frequently be derived using `#[derive(Clone)]` or
+/// adding the `Clone` trait to the other traits in an existing `#derive[...]`
+/// macro. A multiset stores the first element inserted with and a `usize`. When
+/// an api call returns one or more elements it will return clones of that
+/// initial element. For complex elements this can sometimes lead to unexpected
+/// behavior, and in those cases it may be preferable to explore other hash
+/// functions or non-hash map backed multiset implementations.
 ///
 /// # Examples
 ///
