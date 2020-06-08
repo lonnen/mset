@@ -85,8 +85,8 @@ use std::ops::{BitAnd, BitOr, BitXor, Sub};
 /// ```
 ///
 /// The easiest way to use `MultiSet` with a custom type is to derive [`Eq`],
-/// [`Hash`], and [`Clone`]. We must also derive [`PartialEq`], this will in the future be
-/// implied by [`Eq`].
+/// [`Hash`], and [`Clone`]. We must also derive [`PartialEq`], this will in the
+/// future be implied by [`Eq`].
 ///
 /// ```
 /// use mset::MultiSet;
