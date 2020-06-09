@@ -137,8 +137,8 @@ pub struct MultiSet<T, S = RandomState> {
 impl<T: Hash + Eq + Clone> MultiSet<T, RandomState> {
     /// Create an empty `MultiSet`.
     ///
-    /// The multiset is initially created with a capacity of 0 distinct elements, so it will not
-    /// allocate until it is first inserted into.
+    /// The multiset is initially created with a capacity of 0 distinct
+    /// elements, so it will not allocate until it is first inserted into.
     ///
     /// # Examples
     ///
