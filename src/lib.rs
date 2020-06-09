@@ -157,8 +157,9 @@ impl<T: Hash + Eq + Clone> MultiSet<T, RandomState> {
 
     /// Create an empty `MultiSet` with the specified capacity.
     ///
-    /// The multiset will be able to hold at least `capacity` distinct elements without
-    /// reallocating. If `capacity` is 0, the multiset will not allocate on creation.
+    /// The multiset will be able to hold at least `capacity` distinct elements
+    /// without reallocating. If `capacity` is 0, the multiset will not allocate
+    /// on creation.
     ///
     /// # Examples
     ///
