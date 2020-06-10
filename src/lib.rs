@@ -176,7 +176,8 @@ impl<T: Hash + Eq + Clone> MultiSet<T, RandomState> {
 }
 
 impl<T, S> MultiSet<T, S> {
-    /// Returns the number of distinct elements the multiset can hold without reallocating.
+    /// Returns the number of distinct elements the multiset can hold without
+    /// reallocating.
     ///
     /// # Examples
     ///
