@@ -319,8 +319,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         }
     }
 
-    /// Create an empty `MultiSet` with the specified capacity, using `hash_builder`
-    /// to hash the elements.
+    /// Create an empty `MultiSet` with the specified capacity, using
+    /// `hash_builder` to hash the elements.
     ///
     /// The created MutliSet will hold at least `capacity` elements without
     /// reallocating. If `capacity` is 0, the MultiSet will not allocate.
@@ -359,8 +359,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.hasher()
     }
 
-    /// Reserves capacity for at least `additional` more distinct elements to be inserted
-    /// in the `HashMap`. The collection may reserve more space to avoid
+    /// Reserves capacity for at least `additional` more distinct elements to
+    /// be inserted in the `HashMap`. The collection may reserve more space to avoid
     /// frequent reallocations.
     ///
     /// # Panics
