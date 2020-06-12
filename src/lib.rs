@@ -852,7 +852,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.get(element)
     }
 
-    /// Returns the element-multiplicity pair corresponding to the supplied element.
+    /// Returns the element-multiplicity pair corresponding to the supplied
+    /// element.
     ///
     /// # Examples
     ///
