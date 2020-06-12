@@ -648,8 +648,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
 
     /// Retains only the elements specified by the predicate.
     ///
-    /// In other words, remove all pairs `(elem, multiplicty)` such that `f(&k, &mut v)`
-    /// returns `false`.
+    /// In other words, remove all pairs `(elem, multiplicty)` such that
+    /// `f(&k, &mut v)` returns `false`.
     ///
     /// # Examples
     ///
