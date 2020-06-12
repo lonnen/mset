@@ -780,7 +780,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         }
     }
 
-    /// Visits the values representing the union, i.e., all the values in `self` or `other`.
+    /// Visits the values representing the union, i.e., all the values in `self`
+    /// or `other`.
     ///
     /// # Examples
     ///
