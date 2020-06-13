@@ -906,7 +906,8 @@ impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
 impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<T, S>> for &MultiSet<T, S> {
     type Output = MultiSet<T, S>;
 
-    /// Returns the union of `self` and `rhs` (right hand side) as a new `MultiSet<T, S>`.
+    /// Returns the union of `self` and `rhs` (right hand side) as a new
+    /// `MultiSet<T, S>`.
     ///
     /// # Examples
     ///
