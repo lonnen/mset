@@ -936,7 +936,8 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<T, S>> for 
 impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<T, S>> for &MultiSet<T, S> {
     type Output = MultiSet<T, S>;
 
-    /// Returns the intersection of `self` and `rhs` (right hand side) as a new `MultiSet<T, S>`.
+    /// Returns the intersection of `self` and `rhs` (right hand side) as a new
+    /// `MultiSet<T, S>`.
     ///
     /// # Examples
     ///
@@ -966,8 +967,8 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitAnd<&MultiSet<T, S>> for
 impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitXor<&MultiSet<T, S>> for &MultiSet<T, S> {
     type Output = MultiSet<T, S>;
 
-    /// Returns the symmetric difference of `self` and `rhs` (right hand side) as a
-    /// new `MultiSet<T, S>`.
+    /// Returns the symmetric difference of `self` and `rhs` (right hand side)
+    /// as a new `MultiSet<T, S>`.
     ///
     /// # Examples
     ///
