@@ -1196,8 +1196,8 @@ impl<T> FusedIterator for Iter<'_, T> {}
 
 /// An owning iterator over the items of a `MultiSet`.
 ///
-/// This `struct` is created by the [`into_iter`] method on [`MultiSet`] (provided by the
-/// `IntoIterator` trait). See its documentation for more.
+/// This `struct` is created by the [`into_iter`] method on [`MultiSet`]
+/// (provided by the `IntoIterator` trait). See its documentation for more.
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`into_iter`]: struct.MultiSet.html#method.into_iter
