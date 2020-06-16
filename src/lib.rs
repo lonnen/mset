@@ -1370,10 +1370,11 @@ impl<T: fmt::Debug + Eq + Hash + Clone, S: BuildHasher> fmt::Debug for Differenc
     }
 }
 
-/// A lazy iterator producing elements in the symmetric difference of `MultiSet`s.
+/// A lazy iterator producing elements in the symmetric difference of
+/// `MultiSet`s.
 ///
-/// This `struct` is created by the [`symmetric_difference`] method on [`MultiSet`].
-/// See its documentation for more.
+/// This `struct` is created by the [`symmetric_difference`] method on
+/// [`MultiSet`]. See its documentation for more.
 ///
 /// [`MultiSet`]: struct.MultiSet.html
 /// [`symmetric_difference`]: struct.MultiSet.html#method.symmetric_difference
