@@ -18,7 +18,7 @@ use std::borrow::Borrow;
 use std::cmp::min;
 use std::collections::hash_map::{self, RandomState};
 use std::collections::hash_map::{
-    Entry, IntoIter as MapIntoIter, Iter as MapIter, Keys,
+    Entry, Iter as MapIter, Keys,
 };
 use std::collections::HashMap;
 use std::fmt;
@@ -1203,7 +1203,7 @@ impl<T> FusedIterator for Iter<'_, T> {}
 /// [`into_iter`]: struct.MultiSet.html#method.into_iter
 #[derive(Debug)]
 pub struct IntoIter<T> {
-    iter: MapIntoIter<T, usize>,
+    iter: hash_map::IntoIter<T, usize>,
 }
 
 impl<T> Iterator for IntoIter<T> {
