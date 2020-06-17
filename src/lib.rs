@@ -16,9 +16,9 @@
 
 use std::borrow::Borrow;
 use std::cmp::min;
-use std::collections::hash_map::RandomState;
+use std::collections::hash_map::{self, RandomState};
 use std::collections::hash_map::{
-    Drain as MapDrain, Entry, IntoIter as MapIntoIter, Iter as MapIter, Keys,
+    Entry, IntoIter as MapIntoIter, Iter as MapIter, Keys,
 };
 use std::collections::HashMap;
 use std::fmt;
@@ -1228,7 +1228,7 @@ impl<T> FusedIterator for IntoIter<T> {}
 
 #[derive(Debug)]
 pub struct Drain<'a, T: 'a> {
-    iter: MapDrain<'a, T, usize>,
+    iter: hash_map::Drain<'a, T, usize>,
 }
 
 impl<'a, T> Iterator for Drain<'a, T> {
