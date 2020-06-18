@@ -18,7 +18,7 @@ use std::borrow::Borrow;
 use std::cmp::min;
 use std::collections::hash_map::{self, RandomState};
 use std::collections::hash_map::{
-    Entry, Iter as MapIter, Keys,
+    Entry, Keys,
 };
 use std::collections::HashMap;
 use std::fmt;
@@ -1123,7 +1123,7 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher + Default> Extend<&'a T> for Multi
 /// [`element_counts`]: struct.MultiSet.html#method.element_counts
 #[derive(Debug)]
 pub struct ElementCounts<'a, T: 'a> {
-    iter: MapIter<'a, T, usize>,
+    iter: hash_map::Iter<'a, T, usize>,
 }
 
 impl<T> Clone for ElementCounts<'_, T> {
@@ -1163,7 +1163,7 @@ impl<T> FusedIterator for ElementCounts<'_, T> {}
 /// [`iter`]: struct.MultiSet.html#method.iter
 #[derive(Debug)]
 pub struct Iter<'a, T: 'a> {
-    iter: MapIter<'a, T, usize>,
+    iter: hash_map::Iter<'a, T, usize>,
 }
 
 impl<T> Clone for Iter<'_, T> {
