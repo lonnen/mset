@@ -16,10 +16,7 @@
 
 use std::borrow::Borrow;
 use std::cmp::min;
-use std::collections::hash_map::{self, RandomState};
-use std::collections::hash_map::{
-    Entry, Keys,
-};
+use std::collections::hash_map::{self, Entry, Keys, RandomState};
 use std::collections::HashMap;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
