@@ -21,7 +21,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
-use std::ops::{BitAnd, BitOr, BitXor, Sub};
+use std::ops::{self, BitAnd, BitOr, BitXor, Sub};
 
 /// A hash multiset implemented as a `HashMap` where the value is `usize`.
 ///
