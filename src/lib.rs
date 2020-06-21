@@ -21,7 +21,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
-use std::ops::{self, BitOr, BitXor, Sub};
+use std::ops::{self, BitXor, Sub};
 
 /// A hash multiset implemented as a `HashMap` where the value is `usize`.
 ///
@@ -900,7 +900,7 @@ impl<T: Hash + Eq, S: BuildHasher + Default> Default for MultiSet<T, S> {
     }
 }
 
-impl<T: Eq + Hash + Clone, S: BuildHasher + Default> BitOr<&MultiSet<T, S>> for &MultiSet<T, S> {
+impl<T: Eq + Hash + Clone, S: BuildHasher + Default> ops::BitOr<&MultiSet<T, S>> for &MultiSet<T, S> {
     type Output = MultiSet<T, S>;
 
     /// Returns the union of `self` and `rhs` (right hand side) as a new
