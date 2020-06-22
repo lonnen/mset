@@ -402,7 +402,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.shrink_to_fit();
     }
 
-    /// An iterator visitng all distinct elements and counts in arbitrary order.
+    /// An iterator visiting all distinct elements and counts in arbitrary order.
     /// The iterator element type is `&'a (T, usize)`.
     ///
     /// # Examples
