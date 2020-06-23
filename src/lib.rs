@@ -115,7 +115,7 @@ use std::ops;
 /// use mset::MultiSet;
 ///
 /// let gps: MultiSet<&'static str> =
-///     ["Deathmlom", "Bun Roy", "Funbees", "Sporky", "Bun Roy"].iter().cloned().collect();
+///     ["Deathmlom", "Bun Roy", "Funbees", "Sporky", "Bun Roy"].iter().copied().collect();
 /// // use the values stored in the multiset
 /// ```
 ///
