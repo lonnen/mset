@@ -424,6 +424,12 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         }
     }
 
+    pub fn iter_with_multiplicity(&self) -> impl Iterator<Item = T> + '_
+    {
+        self.iter()
+            .flat_map(|(el, cnt)| std::iter::repeat_with(move || el.clone()).take(*cnt))
+    }
+
     /// Returns `true` if `self` has no elements in common with `other`.
     /// This is equivalent to checking for an empty intersection.
     ///
