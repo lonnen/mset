@@ -502,7 +502,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// ```
     /// use mset::MultiSet;
     ///
-    /// let msub: MultiSet<_> = [1, 2, 2].iter().cloned().collect();
+    /// let msub: MultiSet<_> = [1, 2, 2].iter().copied().collect();
     /// let mut mset = MultiSet::new();
     ///
     /// assert_eq!(mset.is_superset(&msub), false);
