@@ -424,6 +424,22 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
         }
     }
 
+    /// An iterator visiting all elements in arbtitrary order.
+    /// The iterator element type is `T`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mset::MultiSet;
+    /// let mut mset = MultiSet::new();
+    /// mset.insert("a");
+    /// mset.insert("a");
+    /// mset.insert("b");
+    ///
+    /// for elem in mset.iter_with_multiplicity() {
+    ///     println!("{}", elem);
+    /// }
+    /// ```
     pub fn iter_with_multiplicity(&self) -> impl Iterator<Item = T> + '_
     {
         self.iter()
