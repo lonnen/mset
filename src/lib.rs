@@ -128,6 +128,7 @@ use std::ops;
 /// [`RefCell`]: struct.RefCell.html
 #[derive(Clone)]
 pub struct MultiSet<T, S = RandomState> {
+    // MultiSet element counts are strictly positive integers
     elem_counts: HashMap<T, usize, S>,
 }
 
