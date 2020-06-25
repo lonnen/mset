@@ -132,7 +132,7 @@ pub struct MultiSet<T, S = RandomState> {
     elem_counts: HashMap<T, usize, S>,
 }
 
-impl<T: Hash + Eq + Clone> MultiSet<T, RandomState> {
+impl<T: Hash + Eq> MultiSet<T, RandomState> {
     /// Create an empty `MultiSet`.
     ///
     /// The multiset is initially created with a capacity of 0 distinct
