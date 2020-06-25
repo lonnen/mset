@@ -190,7 +190,7 @@ impl<T, S> MultiSet<T, S> {
     }
 
     /// An iterator visitng all distinct elements and counts in arbitrary order.
-    /// The iterator element type is `&'a (T, usize)`.
+    /// The iterator element type is `(&T, &usize)`.
     ///
     /// # Examples
     ///
