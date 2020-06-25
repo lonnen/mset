@@ -488,10 +488,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.is_subset(&msup), false);
     /// ```
     pub fn is_subset(&self, other: &MultiSet<T, S>) -> bool {
-        self.iter().all(|(e, m)| match other.get(e) {
-            Some(o_m) => m <= o_m,
-            None => false,
-        })
+        self.iter().all(|(e, m)| *m <= other.get(e).copied().unwrap_or_default())
     }
 
     /// Returns `true` if the multiset is a superset of another,
