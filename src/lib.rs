@@ -440,8 +440,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///     println!("{}", elem);
     /// }
     /// ```
-    pub fn iter_with_multiplicity(&self) -> impl Iterator<Item = T> + '_
-    {
+    pub fn iter_with_multiplicity(&self) -> impl Iterator<Item = T> + '_ {
         self.iter()
             .flat_map(|(el, cnt)| std::iter::repeat_with(move || el.clone()).take(*cnt))
     }
@@ -488,7 +487,8 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.is_subset(&msup), false);
     /// ```
     pub fn is_subset(&self, other: &MultiSet<T, S>) -> bool {
-        self.iter().all(|(e, m)| *m <= other.get(e).copied().unwrap_or_default())
+        self.iter()
+            .all(|(e, m)| *m <= other.get(e).copied().unwrap_or_default())
     }
 
     /// Returns `true` if the multiset is a superset of another,
