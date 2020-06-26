@@ -236,6 +236,8 @@ impl<T, S> MultiSet<T, S> {
 
     /// Returns the total number of elements in the multiset.
     ///
+    /// This is dynamically computed and runs in O(N) time.
+    ///
     /// # Examples
     ///
     /// ```
@@ -251,9 +253,7 @@ impl<T, S> MultiSet<T, S> {
     /// assert_eq!(mset.len(), 12);
     /// ```
     pub fn len(&self) -> usize {
-        self.elem_counts
-            .values()
-            .fold(0, |acc, multiplicity| acc + multiplicity)
+        self.elem_counts.values().sum()
     }
 
     /// Returns `true` if the multiset contains no elements.
