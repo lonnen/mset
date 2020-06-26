@@ -595,7 +595,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     pub fn remove<Q: ?Sized>(&mut self, element: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + Clone,
+        Q: Hash + Eq,
     {
         self.remove_times(element, 1)
     }
@@ -621,7 +621,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     pub fn remove_times<Q: ?Sized>(&mut self, element: &Q, multiplicity: usize) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + Clone,
+        Q: Hash + Eq,
     {
         let default_value = &mut 0;
         let value = self.elem_counts.get_mut(element).unwrap_or(default_value);
