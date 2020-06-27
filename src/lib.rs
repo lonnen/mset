@@ -618,7 +618,11 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert!(mset.is_empty());
     /// ```
-    pub fn remove_times<Q: ?Sized>(&mut self, element: &Q, multiplicity: usize) -> bool
+    pub fn remove_times<Q: ?Sized>(
+        &mut self,
+        element: &Q,
+        multiplicity: usize
+    ) -> bool
     where
         T: Borrow<Q>,
         Q: Hash + Eq,
