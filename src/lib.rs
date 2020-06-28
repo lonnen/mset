@@ -657,14 +657,14 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// use mset::MultiSet;
     ///
     /// let mut mset: MultiSet<_> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
-    /// assert_eq!(mset.take(&'b'), Some(2));
+    /// assert_eq!(mset.take(&'b'), Some(('b', 2)));
     /// assert_eq!(mset.take(&'d'), None);
     /// ```
     ///
     /// [`Eq`]: trait.Eq.html
     /// [`Hash`]: trait.Hash.html
-    pub fn take(&mut self, value: &T) -> Option<usize> {
-        self.elem_counts.remove_entry(value).map(|(_, v)| v)
+    pub fn take(&mut self, value: &T) -> Option<(T, usize)> {
+        self.elem_counts.remove_entry(value)
     }
 
     /// Retains only the elements specified by the predicate.
