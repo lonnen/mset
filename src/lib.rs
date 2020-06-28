@@ -847,7 +847,7 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + Clone,
+        Q: Hash + Eq,
     {
         self.elem_counts.contains_key(value)
     }
