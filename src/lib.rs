@@ -854,6 +854,10 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
 
     /// Returns a reference to the value corresponding to the element.
     ///
+    /// Multiplicty is represented as a usize but this should never return
+    /// `Some(0)` because elements should be removed when multiplicity would
+    /// reach 0.
+    ///
     /// # Examples
     ///
     /// ```
