@@ -890,7 +890,11 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get_element_multiplicity(&'a'), Some((&'a', &1)));
     /// assert_eq!(mset.get_element_multiplicity(&'b'), None);
     /// ```
-    pub fn get_element_multiplicity(&self, element: &T) -> Option<(&T, &usize)> {
+    pub fn get_element_multiplicity<Q: ?Sized>(&self, element: &Q) -> Option<(&T, &usize)>
+    where
+        T: Borrow<Q>,
+        Q: Hash + Eq,
+    {
         self.elem_counts.get_key_value(element)
     }
 }
