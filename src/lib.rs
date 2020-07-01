@@ -189,7 +189,7 @@ impl<T, S> MultiSet<T, S> {
         self.elem_counts.capacity()
     }
 
-    /// An iterator visitng all distinct elements and counts in arbitrary order.
+    /// An iterator visiting all distinct elements and counts in arbitrary order.
     /// The iterator element type is `(&T, &usize)`.
     ///
     /// # Examples
