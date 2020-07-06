@@ -296,7 +296,7 @@ impl<T, S> MultiSet<T, S> {
     }
 }
 
-impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
+impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// Create an empty `MultiSet` using the specified hasher.
     ///
     /// The created MutliSet has the default initial capacity.
@@ -440,7 +440,10 @@ impl<T: Hash + Eq + Clone, S: BuildHasher> MultiSet<T, S> {
     ///     println!("{}", elem);
     /// }
     /// ```
-    pub fn iter_with_multiplicity(&self) -> impl Iterator<Item = T> + '_ {
+    pub fn iter_with_multiplicity(&self) -> impl Iterator<Item = T> + '_
+    where
+        T: Clone,
+    {
         self.iter()
             .flat_map(|(el, cnt)| std::iter::repeat_with(move || el.clone()).take(*cnt))
     }
@@ -1362,7 +1365,7 @@ impl<T: Clone, S> Clone for Difference<'_, T, S> {
     }
 }
 
-impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Difference<'a, T, S> {
+impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<&'a T> {
