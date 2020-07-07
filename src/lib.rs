@@ -467,7 +467,10 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(p.is_disjoint(&q), false);
     /// ```
     pub fn is_disjoint(&self, other: &MultiSet<T, S>) -> bool {
-        self.iter().all(|(e, _)| !other.contains(e))
+        match self.len() < other.len() {
+            true => self.iter().all(|(e, _)| !other.contains(e)),
+            false => self.iter().all(|(e, _)| !other.contains(e))
+        }
     }
 
     /// Returns `true` if the multiset is a subset of another,
