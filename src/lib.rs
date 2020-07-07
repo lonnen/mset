@@ -469,7 +469,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     pub fn is_disjoint(&self, other: &MultiSet<T, S>) -> bool {
         match self.len() < other.len() {
             true => self.iter().all(|(e, _)| !other.contains(e)),
-            false => self.iter().all(|(e, _)| !other.contains(e))
+            false => other.iter().all(|(e, _)| !self.contains(e))
         }
     }
 
