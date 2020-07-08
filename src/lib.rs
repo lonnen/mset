@@ -565,14 +565,14 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.len(), 12);
     /// assert_eq!(mset.get(&'a'), Some(&12));
     /// ```
-    pub fn insert_times(&mut self, value: T, n: usize) -> bool {
+    pub fn insert_times(&mut self, value: T, multiplicity: usize) -> bool {
         match self.elem_counts.entry(value) {
             Entry::Vacant(view) => {
-                view.insert(n);
+                view.insert(multiplicity);
                 true
             }
             Entry::Occupied(mut view) => {
-                *view.get_mut() += n;
+                *view.get_mut() += multiplicity;
                 false
             }
         }
