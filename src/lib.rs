@@ -149,7 +149,7 @@ impl<T> MultiSet<T, RandomState> {
     /// ```
     pub fn new() -> MultiSet<T, RandomState> {
         MultiSet {
-            elem_counts: HashMap::new(),
+            elem_counts: HashMap::with_capacity(0),
         }
     }
 
@@ -588,9 +588,11 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// use mset::MultiSet;
     ///
     /// let mut mset: MultiSet<_> = MultiSet::new();
-    /// mset.insert_times('a', 1);
+    /// assert_eq!(mset.len(), 0);
+    /// mset.insert('a');
     ///
-    /// assert_eq!(mset.capacity(), 1);
+    /// mset.shrink_to_fit();
+    /// assert_eq!(mset.len(), 1);
     /// assert_eq!(mset.remove(&'a'), true);
     /// assert_eq!(mset.remove(&'a'), false);
     ///
