@@ -149,7 +149,7 @@ impl<T> MultiSet<T, RandomState> {
     /// ```
     pub fn new() -> MultiSet<T, RandomState> {
         MultiSet {
-            elem_counts: HashMap::with_capacity(0),
+            elem_counts: HashMap::new(),
         }
     }
 
