@@ -230,7 +230,7 @@ impl<T, S> MultiSet<T, S> {
     ///     println!("{}", e);
     /// }
     /// ```
-    pub fn elements(&self) -> Keys<T, usize> {
+    pub fn distinct_elements(&self) -> Keys<T, usize> {
         self.elem_counts.keys()
     }
 
