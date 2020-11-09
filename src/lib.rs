@@ -1389,11 +1389,6 @@ impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
             self.remaining = count.saturating_sub(other_count);
         }
     }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        let (_, upper) = self.iter.size_hint();
-        (0, upper)
-    }
 }
 
 impl<T: Eq + Hash + Clone, S: BuildHasher> FusedIterator for Difference<'_, T, S> {}
