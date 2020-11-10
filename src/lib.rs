@@ -1322,7 +1322,7 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
-                Some(c) => c.clone(),
+                Some(c) => *c,
                 None => 0usize,
             };
 
@@ -1381,7 +1381,7 @@ impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
 
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
-                Some(c) => c.clone(),
+                Some(c) => *c,
                 None => 0usize,
             };
 
