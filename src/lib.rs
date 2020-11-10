@@ -674,7 +674,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// Retains only the elements specified by the predicate.
     ///
     /// In other words, remove all pairs `(elem, multiplicty)` such that
-    /// `f(&k, &mut v)` returns `false`.
+    /// `f(&k, usize)` returns `false`.
     ///
     /// # Examples
     ///
@@ -682,16 +682,16 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// use mset::MultiSet;
     ///
     /// let mut mset: MultiSet<_> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
-    /// mset.retain(|_, m: &usize| m % 2 == 0);
+    /// mset.retain(|_, m: usize| m % 2 == 0);
     ///
     /// assert_eq!(mset.elements().len(), 2);
     /// assert_eq!(mset.len(), 4);
     /// ```
     pub fn retain<F>(&mut self, mut f: F)
     where
-        F: FnMut(&T, &usize) -> bool,
+        F: FnMut(&T, usize) -> bool,
     {
-        self.elem_counts.retain(|e, m| f(e, m));
+        self.elem_counts.retain(|e, m| f(e, *m));
     }
 
     /// Clears the multiset, returning all elements in an iterator.
