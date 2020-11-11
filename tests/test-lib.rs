@@ -408,4 +408,11 @@ fn test_retain() {
 
     assert_eq!(mset.get(&1), Some(&2usize));
     assert_eq!(mset.get(&2), Some(&2usize));
+
+    mset.retain(|&_k, v| {
+        v == 1
+    });
+
+    assert_eq!(mset.elements().len(), 1);
+    assert_eq!(mset.get(&2), Some(&1usize));
 }
