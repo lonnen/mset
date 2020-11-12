@@ -409,10 +409,11 @@ fn test_retain() {
     assert_eq!(mset.get(&1), Some(&2usize));
     assert_eq!(mset.get(&2), Some(&2usize));
 
+    let mut mset: MultiSet<_> = [1, 2, 3, 4, 5, 4, 3, 2, 1].iter().cloned().collect();
     mset.retain(|&_k, v| {
         v == 1
     });
 
     assert_eq!(mset.elements().len(), 1);
-    assert_eq!(mset.get(&2), Some(&1usize));
+    assert_eq!(mset.get(&5), Some(&1usize));
 }
