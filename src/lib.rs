@@ -16,7 +16,7 @@
 
 use std::borrow::Borrow;
 use std::cmp::min;
-use std::collections::hash_map::{self, Entry, Keys, RandomState};
+use std::collections::hash_map::{self, Entry, RandomState};
 use std::collections::HashMap;
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
@@ -230,7 +230,7 @@ impl<T, S> MultiSet<T, S> {
     ///     println!("{}", e);
     /// }
     /// ```
-    pub fn elements(&self) -> Keys<T, usize> {
+    pub fn elements(&self) -> Elements<T> {
         self.elem_counts.keys()
     }
 
@@ -1191,6 +1191,15 @@ impl<T> ExactSizeIterator for ElementCounts<'_, T> {
 }
 
 impl<T> FusedIterator for ElementCounts<'_, T> {}
+
+/// An iterator over the elements of a `MultiSet`.
+///
+/// This `struct` is created by the [`elements`] method on [`MultiSet`].
+/// See its documentation for more.
+///
+/// [`MultiSet`]: struct.MultiSet.html
+/// [`elements`]: struct.MultiSet.html#method.elements
+pub type Elements<'a, T> = std::collections::hash_map::Keys<'a, T, usize>;
 
 /// An iterator over the items of a `MultiSet`.
 ///
