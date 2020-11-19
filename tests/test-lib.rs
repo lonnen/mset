@@ -76,7 +76,7 @@ fn test_iterator_over_elements() {
         observed += m;
     }
 
-    assert_eq!(mset.elements().len(), observed_len);
+    assert_eq!(mset.distinct_elements().len(), observed_len);
     assert_eq!(observed, 16);
 
     let mut mset = MultiSet::new();
@@ -370,7 +370,7 @@ fn test_extend_ref() {
 
     a.extend(&[1, 2, 3, 4]);
 
-    assert_eq!(a.elements().len(), 4);
+    assert_eq!(a.distinct_elements().len(), 4);
     assert_eq!(a.len(), 5);
     assert!(a.contains(&1));
     assert!(a.contains(&2));
@@ -385,7 +385,7 @@ fn test_extend_ref() {
 
     a.extend(&b);
 
-    assert_eq!(a.elements().len(), 5);
+    assert_eq!(a.distinct_elements().len(), 5);
     assert_eq!(a.len(), 8);
 
     assert!(a.contains(&1));
@@ -403,7 +403,7 @@ fn test_retain() {
     let mut mset: MultiSet<_> = [1, 2, 3, 4, 5, 4, 3, 2, 1].iter().cloned().collect();
     mset.retain(|&k, _v| k < 3);
 
-    assert_eq!(mset.elements().len(), 2);
+    assert_eq!(mset.distinct_elements().len(), 2);
     assert_eq!(mset.len(), 4);
 
     assert_eq!(mset.get(&1), Some(&2usize));
@@ -414,6 +414,6 @@ fn test_retain() {
         v == 1
     });
 
-    assert_eq!(mset.elements().len(), 1);
+    assert_eq!(mset.distinct_elements().len(), 1);
     assert_eq!(mset.get(&5), Some(&1usize));
 }

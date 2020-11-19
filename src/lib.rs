@@ -71,7 +71,7 @@ use std::ops;
 /// // Check for a specific one.
 /// if !bag.contains(&"Hacedor".to_string()) {
 ///     println!("We have {} words, but Hacedor ain't one.",
-///              bag.elements().len());
+///              bag.distinct_elements().len());
 /// }
 ///
 /// // Remove a word
@@ -145,7 +145,7 @@ impl<T> MultiSet<T, RandomState> {
     ///
     /// let mset: MultiSet<char> = MultiSet::new();
     /// assert_eq!(mset.len(), 0);
-    /// assert_eq!(mset.elements().len(), 0);
+    /// assert_eq!(mset.distinct_elements().len(), 0);
     /// ```
     pub fn new() -> MultiSet<T, RandomState> {
         MultiSet {
@@ -226,11 +226,11 @@ impl<T, S> MultiSet<T, S> {
     /// mset.insert('c');
     ///
     /// // Will print in an arbitrary order.
-    /// for e in mset.elements() {
+    /// for e in mset.distinct_elements() {
     ///     println!("{}", e);
     /// }
     /// ```
-    pub fn elements(&self) -> Elements<T> {
+    pub fn distinct_elements(&self) -> Elements<T> {
         self.elem_counts.keys()
     }
 
@@ -540,7 +540,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.insert('a'), false);
     ///
     /// assert_eq!(mset.len(), 2);
-    /// assert_eq!(mset.elements().len(), 1);
+    /// assert_eq!(mset.distinct_elements().len(), 1);
     /// ```
     pub fn insert(&mut self, value: T) -> bool {
         self.insert_times(value, 1)
@@ -561,7 +561,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert!(mset.insert_times('a', 10));
     /// assert!(!mset.insert_times('a', 2));
     ///
-    /// assert_eq!(mset.elements().len(), 1);
+    /// assert_eq!(mset.distinct_elements().len(), 1);
     /// assert_eq!(mset.len(), 12);
     /// assert_eq!(mset.get(&'a'), Some(&12));
     /// ```
@@ -684,7 +684,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// let mut mset: MultiSet<_> = vec!['a', 'b', 'c', 'b', 'a'].iter().cloned().collect();
     /// mset.retain(|_, m: usize| m % 2 == 0);
     ///
-    /// assert_eq!(mset.elements().len(), 2);
+    /// assert_eq!(mset.distinct_elements().len(), 2);
     /// assert_eq!(mset.len(), 4);
     /// ```
     pub fn retain<F>(&mut self, mut f: F)
@@ -917,7 +917,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
 ///
 /// let mset: MultiSet<_> = MultiSet::from(m);
 ///
-/// assert_eq!(mset.elements().len(), 2);
+/// assert_eq!(mset.distinct_elements().len(), 2);
 /// assert_eq!(mset.len(), 5);
 /// ```
 impl<T: Hash + Eq> From<HashMap<T, usize>> for MultiSet<T> {
@@ -1198,7 +1198,7 @@ impl<T> FusedIterator for ElementCounts<'_, T> {}
 /// See its documentation for more.
 ///
 /// [`MultiSet`]: struct.MultiSet.html
-/// [`elements`]: struct.MultiSet.html#method.elements
+/// [`distinct_elements`]: struct.MultiSet.html#method.distinct_elements
 pub type Elements<'a, T> = std::collections::hash_map::Keys<'a, T, usize>;
 
 /// An iterator over the items of a `MultiSet`.
