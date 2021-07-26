@@ -1064,12 +1064,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher + Default> ops::Sub<&MultiSet<T, S>> f
 
 impl<T: Eq + Hash + Clone, S: BuildHasher> PartialEq for MultiSet<T, S> {
     fn eq(&self, other: &MultiSet<T, S>) -> bool {
-        if self.len() != other.len() {
-            return false;
-        }
-
-        self.iter()
-            .all(|(key, value)| other.get(key).map_or(false, |v| *value == *v))
+        self.len() == other.len()
     }
 }
 
