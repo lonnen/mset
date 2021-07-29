@@ -856,10 +856,11 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         self.elem_counts.contains_key(value)
     }
 
-    /// Returns a reference to the value corresponding to the element.
+    /// Returns a usize representing how many of the provided element are
+    /// stored in the mset.
     ///
     /// Multiplicty is represented as a usize but `0` is an invalid value and
-    /// `Size(0)` is an invalid return value.
+    /// `Size(0)` is an invalid return value. Expect None instead.
     ///
     /// # Examples
     ///
@@ -872,12 +873,12 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// assert_eq!(mset.get(&'a'), Some(&1));
     /// assert_eq!(mset.get(&'b'), None);
     /// ```
-    pub fn get<Q: ?Sized>(&self, element: &Q) -> Option<&usize>
+    pub fn get<Q: ?Sized>(&self, element: &Q) -> Option<usize>
     where
         T: Borrow<Q>,
         Q: Hash + Eq,
     {
-        self.elem_counts.get(element)
+        self.elem_counts.get(element).map(|count| *count)
     }
 
     /// Returns the element-multiplicity pair corresponding to the supplied
