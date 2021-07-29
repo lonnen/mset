@@ -494,7 +494,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// ```
     pub fn is_subset(&self, other: &MultiSet<T, S>) -> bool {
         self.iter()
-            .all(|(e, m)| *m <= other.get(e).copied().unwrap_or_default())
+            .all(|(e, m)| *m <= other.get(e).unwrap_or_default())
     }
 
     /// Returns `true` if the multiset is a superset of another,
@@ -563,7 +563,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     ///
     /// assert_eq!(mset.distinct_elements().len(), 1);
     /// assert_eq!(mset.len(), 12);
-    /// assert_eq!(mset.get(&'a'), Some(&12));
+    /// assert_eq!(mset.get(&'a'), Some(12));
     /// ```
     pub fn insert_times(&mut self, value: T, multiplicity: usize) -> bool {
         match self.elem_counts.entry(value) {
@@ -870,7 +870,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     /// let mut mset: MultiSet<_> = MultiSet::new();
     /// mset.insert('a');
     ///
-    /// assert_eq!(mset.get(&'a'), Some(&1));
+    /// assert_eq!(mset.get(&'a'), Some(1));
     /// assert_eq!(mset.get(&'b'), None);
     /// ```
     pub fn get<Q: ?Sized>(&self, element: &Q) -> Option<usize>
@@ -1070,7 +1070,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher> PartialEq for MultiSet<T, S> {
         }
 
         self.iter()
-            .all(|(key, value)| other.get(key).map_or(false, |v| *value == *v))
+            .all(|(key, value)| other.get(key).map_or(false, |v| *value == v))
     }
 }
 
@@ -1332,7 +1332,7 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
 
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
-                Some(c) => *c,
+                Some(c) => c,
                 None => 0usize,
             };
 
@@ -1391,7 +1391,7 @@ impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
 
             let (elem, count) = self.iter.next()?;
             let other_count = match self.other.get(elem) {
-                Some(c) => *c,
+                Some(c) => c,
                 None => 0usize,
             };
 

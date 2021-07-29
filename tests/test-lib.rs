@@ -53,12 +53,12 @@ fn test_zero_capacity() {
 fn test_insert_and_retrieve_elements() {
     let mut mset = MultiSet::new();
     mset.insert('a');
-    assert_eq!(mset.get(&'a'), Some(&1));
+    assert_eq!(mset.get(&'a'), Some(1));
     mset.insert('a');
-    assert_eq!(mset.get(&'a'), Some(&2));
+    assert_eq!(mset.get(&'a'), Some(2));
 
     mset.insert_times('b', 5);
-    assert_eq!(mset.get(&'b'), Some(&5));
+    assert_eq!(mset.get(&'b'), Some(5));
 }
 
 #[test]
@@ -126,7 +126,7 @@ fn test_retrieving_mset_values() {
     let mut m1 = MultiSet::new();
     m1.insert_times('d', 9);
 
-    assert_eq!(m1.get(&'d'), Some(&9));
+    assert_eq!(m1.get(&'d'), Some(9));
     assert_eq!(m1.get(&'u'), None);
 }
 
@@ -140,7 +140,7 @@ fn test_mset_clear() {
 
     assert!(!mset.is_empty());
 
-    assert_eq!(mset.get(&'c'), Some(&3));
+    assert_eq!(mset.get(&'c'), Some(3));
 
     mset.clear();
 
@@ -377,8 +377,8 @@ fn test_extend_ref() {
     assert!(a.contains(&3));
     assert!(a.contains(&4));
 
-    assert_eq!(a.get(&1), Some(&2));
-    assert_eq!(a.get(&2), Some(&1));
+    assert_eq!(a.get(&1), Some(2));
+    assert_eq!(a.get(&2), Some(1));
     assert_eq!(a.get(&5), None);
 
     let b: MultiSet<_> = [1, 2, 5].iter().cloned().collect();
@@ -393,9 +393,9 @@ fn test_extend_ref() {
     assert!(a.contains(&3));
     assert!(a.contains(&4));
     assert!(a.contains(&5));
-    assert_eq!(a.get(&1), Some(&3));
-    assert_eq!(a.get(&2), Some(&2));
-    assert_eq!(a.get(&5), Some(&1));
+    assert_eq!(a.get(&1), Some(3));
+    assert_eq!(a.get(&2), Some(2));
+    assert_eq!(a.get(&5), Some(1));
 }
 
 #[test]
@@ -406,8 +406,8 @@ fn test_retain() {
     assert_eq!(mset.distinct_elements().len(), 2);
     assert_eq!(mset.len(), 4);
 
-    assert_eq!(mset.get(&1), Some(&2usize));
-    assert_eq!(mset.get(&2), Some(&2usize));
+    assert_eq!(mset.get(&1), Some(2usize));
+    assert_eq!(mset.get(&2), Some(2usize));
 
     let mut mset: MultiSet<_> = [1, 2, 3, 4, 5, 4, 3, 2, 1].iter().cloned().collect();
     mset.retain(|&_k, v| {
@@ -415,5 +415,5 @@ fn test_retain() {
     });
 
     assert_eq!(mset.distinct_elements().len(), 1);
-    assert_eq!(mset.get(&5), Some(&1usize));
+    assert_eq!(mset.get(&5), Some(1usize));
 }
