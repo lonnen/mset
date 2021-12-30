@@ -60,22 +60,22 @@ use std::ops;
 /// let mut bag = MultiSet::new();
 ///
 /// // Add some words
-/// bag.insert("contemplate".to_string());
-/// bag.insert("the".to_string());
-/// bag.insert("variations".to_string());
-/// bag.insert("of".to_string());
-/// bag.insert("the".to_string());
-/// bag.insert("23".to_string());
-/// bag.insert("letters".to_string());
+/// bag.insert("contemplate");
+/// bag.insert("the");
+/// bag.insert("variations");
+/// bag.insert("of");
+/// bag.insert("the");
+/// bag.insert("23");
+/// bag.insert("letters");
 ///
 /// // Check for a specific one.
-/// if !bag.contains(&"Hacedor".to_string()) {
+/// if !bag.contains(&"Hacedor") {
 ///     println!("We have {} words, but Hacedor ain't one.",
 ///              bag.distinct_elements().len());
 /// }
 ///
 /// // Remove a word
-/// bag.remove(&"23".to_string());
+/// bag.remove(&"23");
 ///
 /// // Iterate over everything.
 /// for (word, count) in &bag {
@@ -97,11 +97,11 @@ use std::ops;
 ///
 /// let mut gps = MultiSet::new();
 ///
-/// gps.insert(GuineaPig { name: "Mumpkans".to_string(), weight: 8 });
-/// gps.insert(GuineaPig { name: "Mumpkans".to_string(), weight: 8 });
-/// gps.insert(GuineaPig { name: "Mr. Mister".to_string(), weight: 5 });
-/// gps.insert(GuineaPig { name: "Popchop".to_string(), weight: 12 });
-/// gps.insert(GuineaPig { name: "Fuzzable".to_string(), weight: 9 });
+/// gps.insert(GuineaPig { name: String::from("Mumpkans"), weight: 8 });
+/// gps.insert(GuineaPig { name: String::from("Mumpkans"), weight: 8 });
+/// gps.insert(GuineaPig { name: String::from("Mr. Mister"), weight: 5 });
+/// gps.insert(GuineaPig { name: String::from("Popchop"), weight: 12 });
+/// gps.insert(GuineaPig { name: String::from("Fuzzable"), weight: 9 });
 ///
 /// // Use derived implementation to print the guinea pigs.
 /// for x in &gps {
