@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/mset/0.0.4")]
+#![doc(html_root_url = "https://docs.rs/mset/0.1.0")]
 //! A hash multiset implemented as a `HashMap` where the value is `usize`.
 //!
 //! A mset, multiset, or bag is a set that allows multiple occurances of an
