@@ -1,6 +1,6 @@
 [package]
 name = "mset"
-version = "0.0.4" # remember to update html_root_url crate attribute
+version = "0.1.0" # remember to update html_root_url crate attribute
 description = "A mset / multiset / bag implementation"
 keywords = ["mset", "multiset", "bag", "counter", "collection"]
 categories = ["data-structures", "mathematics"]
@@ -16,4 +16,4 @@ appveyor = { repository = "lonnen/mset" }
 travis-ci = { repository = "lonnen/mset" }
 
 [dev-dependencies]
-version-sync = "0.9.2"
+version-sync = "0.9.4"
