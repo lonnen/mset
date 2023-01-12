@@ -1335,7 +1335,6 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
             self.remaining = min(*count, other_count);
         }
     }
-
 }
 
 impl<T: Eq + Hash + Clone, S: BuildHasher> FusedIterator for Intersection<'_, T, S> {}
