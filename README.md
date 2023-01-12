@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mset = "0.1.0"
+mset = "0.1.1"
 ```
 
 Now, you can use  mset:

@@ -1,6 +1,6 @@
 [package]
 name = "mset"
-version = "0.1.0" # remember to update html_root_url crate attribute
+version = "0.1.1" # remember to update html_root_url crate attribute
 description = "A mset / multiset / bag implementation"
 keywords = ["mset", "multiset", "bag", "counter", "collection"]
 categories = ["data-structures", "mathematics"]
