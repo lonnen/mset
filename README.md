@@ -1,10 +1,10 @@
 # mset
 
-[![CI status](https://github.com/lonnen/mset/actions/workflows/rust.yml/badge.svg)](https://github.com/lonnen/mset/actions/workflows/rust.yml)
-
 This crate provides a [multiset](https://en.wikipedia.org/wiki/Multiset) implementation for rust.
 
 ## Overview
+
+[![CI status](https://github.com/lonnen/mset/actions/workflows/rust.yml/badge.svg)](https://github.com/lonnen/mset/actions/workflows/rust.yml)
 
 A mset, multiset, or bag is a set that allows multiple occurances of an element. It supports many basic set operations, e.g. membership test, union, intersection, and difference.
 
