@@ -1,5 +1,7 @@
 # mset
 
+[![CI status](https://github.com/lonnen/mset/actions/workflows/rust.yml/badge.svg)](https://github.com/lonnen/mset/actions/workflows/rust.yml)
+
 This crate provides a [multiset](https://en.wikipedia.org/wiki/Multiset) implementation for rust.
 
 ## Overview
