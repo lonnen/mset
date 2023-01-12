@@ -649,7 +649,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         }
 
         // more than enough elements
-        return true;
+        true
     }
 
     /// Removes all instances of an element from the multiset and returns the
@@ -799,7 +799,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
     pub fn intersection<'a>(&'a self, other: &'a MultiSet<T, S>) -> Intersection<'a, T, S> {
         Intersection {
             iter: self.iter(),
-            other: other,
+            other,
             curr: None,
             remaining: 0,
         }
@@ -878,7 +878,7 @@ impl<T: Hash + Eq, S: BuildHasher> MultiSet<T, S> {
         T: Borrow<Q>,
         Q: Hash + Eq,
     {
-        self.elem_counts.get(element).map(|count| *count)
+        self.elem_counts.get(element).copied()
     }
 
     /// Returns the element-multiplicity pair corresponding to the supplied
@@ -1126,7 +1126,7 @@ impl<T: Eq + Hash + Clone, S: BuildHasher> Extend<(T, usize)> for MultiSet<T, S>
 
 impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Extend<(&'a T, &'a usize)> for MultiSet<T, S> {
     fn extend<I: IntoIterator<Item = (&'a T, &'a usize)>>(&mut self, iter: I) {
-        for (key, value) in iter.into_iter().map(|(k, v)| ((*k).clone(), (*v).clone())) {
+        for (key, value) in iter.into_iter().map(|(k, v)| ((*k).clone(), (*v))) {
             self.insert_times(key, value);
         }
     }
@@ -1306,7 +1306,7 @@ impl<T: Clone, S> Clone for Intersection<'_, T, S> {
     fn clone(&self) -> Self {
         Intersection {
             iter: self.iter.clone(),
-            curr: self.curr.clone(),
+            curr: self.curr,
             ..*self
         }
     }
@@ -1320,16 +1320,13 @@ impl<'a, T: Eq + Hash + Clone, S: BuildHasher> Iterator for Intersection<'a, T, 
             match self.remaining {
                 0 => {} // do nothing
                 _ => {
-                    self.remaining = self.remaining - 1;
-                    return Some(self.curr?);
+                    self.remaining -= 1;
+                    return self.curr;
                 }
             }
 
             let (elem, count) = self.iter.next()?;
-            let other_count = match self.other.get(elem) {
-                Some(c) => c,
-                None => 0usize,
-            };
+            let other_count = self.other.get(elem).unwrap_or(0usize);
 
             self.curr = Some(elem);
             self.remaining = min(*count, other_count);
@@ -1378,16 +1375,13 @@ impl<'a, T: Eq + Hash, S: BuildHasher> Iterator for Difference<'a, T, S> {
             match self.remaining {
                 0 => {} // do nothing
                 _ => {
-                    self.remaining = self.remaining - 1;
-                    return Some(self.curr?);
+                    self.remaining -= 1;
+                    return self.curr;
                 }
             }
 
             let (elem, count) = self.iter.next()?;
-            let other_count = match self.other.get(elem) {
-                Some(c) => c,
-                None => 0usize,
-            };
+            let other_count = self.other.get(elem).unwrap_or(0usize);
 
             self.curr = Some(elem);
             self.remaining = count.saturating_sub(other_count);
@@ -1475,8 +1469,8 @@ impl<'a, T: Eq + Hash + Clone> Iterator for Union<'a, T> {
             match self.remaining {
                 0 => {} // do nothing
                 _ => {
-                    self.remaining = self.remaining - 1;
-                    return Some(self.curr?);
+                    self.remaining -= 1;
+                    return self.curr;
                 }
             }
 
