@@ -11,8 +11,6 @@ repository = "https://github.com/lonnen/mset"
 readme = "README.md"
 
 [badges]
-circle-ci = { repository = "lonnen/mset" }
-appveyor = { repository = "lonnen/mset" }
 travis-ci = { repository = "lonnen/mset" }
 
 [dev-dependencies]
