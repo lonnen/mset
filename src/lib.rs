@@ -16,8 +16,8 @@
 
 use std::borrow::Borrow;
 use std::cmp::min;
-use std::collections::hash_map::{self, Entry, RandomState};
 use std::collections::HashMap;
+use std::collections::hash_map::{self, Entry, RandomState};
 use std::fmt;
 use std::hash::{BuildHasher, Hash};
 use std::iter::{Chain, FromIterator, FusedIterator};
